@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตารางเวียนหน้าที่ "เภสัชกร" รพ.อุทัย</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0077b6;
+            --secondary-color: #00b4d8;
+            --success-color: #198754;
+            --danger-color: #dc3545;
+            --light-bg: #f8f9fa;
+            --border-color: #dee2e6;
+        }
+        body { font-family: 'Kanit', sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
+        .container { width: 100%; max-width: 1400px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        h1 { text-align: center; color: var(--primary-color); display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0; flex-grow: 1; }
+        .action-button { background-color: #6c757d; color: white; font-family: 'Kanit', sans-serif; font-size: 1em; font-weight: bold; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: background-color 0.3s; }
+        .action-button:hover { background-color: #5a6268; }
+        #year-selector { font-family: 'Kanit', sans-serif; font-size: 1em; font-weight: bold; width: 110px; padding: 5px; border: 1px solid var(--border-color); border-radius: 5px; text-align: center; color: var(--primary-color); background-color: white; }
+        .view-nav { display: flex; flex-wrap: wrap; justify-content: center; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); }
+        .view-nav button { padding: 12px 25px; font-family: 'Kanit', sans-serif; font-size: 1.1em; font-weight: bold; border: none; background-color: transparent; cursor: pointer; transition: color 0.3s, border-bottom 0.3s; color: #6c757d; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+        .view-nav button.active { color: var(--primary-color); border-bottom: 3px solid var(--primary-color); }
+        .controls-container { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; margin-bottom: 25px; padding: 15px; background-color: var(--light-bg); border-radius: 8px; gap: 20px; }
+        .controls-container label { font-weight: bold; color: var(--primary-color); }
+        .controls-container select { padding: 8px 12px; font-family: 'Kanit', sans-serif; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; width: auto; }
+        .view { display: none; }
+        .view.active { display: block; }
+        #yearly-view .year-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .month-container { border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; }
+        .month-header { text-align: center; font-weight: bold; font-size: 1.2em; margin-bottom: 10px; color: var(--primary-color); }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .calendar-grid .day-header { font-weight: bold; text-align: center; font-size: 0.8em; }
+        .calendar-grid .day-cell { height: 35px; border: 1px solid #eee; text-align: center; font-size: 0.8em; position: relative; }
+        .day-cell .day-number { position: absolute; top: 2px; left: 4px; }
+        .day-cell .duty-marker { font-weight: bold; display: flex; justify-content: center; align-items: center; height: 100%; border-radius: 3px; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 12px 8px; text-align: center; font-size: 14px; white-space: nowrap; }
+        th { background-color: var(--primary-color); color: white; font-weight: bold; }
+        .weekend-row { background-color: #fffbeb !important; }
+        #monthly-table-body td.swappable { cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        #monthly-table-body td.swappable:hover { transform: scale(1.05); box-shadow: 0 0 10px var(--secondary-color); z-index: 10; position: relative; }
+        #monthly-table-body td.swap-selected { outline: 3px solid var(--secondary-color); outline-offset: -3px; background-color: #e0f7fa !important; }
+        .swapped-animation { animation: flash-success 1s; }
+        @keyframes flash-success { 0% { background-color: var(--success-color); color: white; } 100% { } }
+        #summary-view th, #summary-view td { font-size: 1.1em; padding: 14px; }
+        #weekly-view table { table-layout: fixed; }
+        #weekly-view th, #weekly-view td { white-space: normal; padding: 10px; }
+        #weekly-view .duty-label { font-weight: bold; text-align: right; background-color: var(--light-bg); }
+        .legend { margin-top: 25px; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
+        .legend-item { display: flex; align-items: center; font-size: 14px; }
+        .legend-color { width: 18px; height: 18px; margin-right: 8px; border-radius: 4px; }
+        .role-color-0 { background-color: #caf0f8; } .role-color-1 { background-color: #fec8a1; }
+        .role-color-2 { background-color: #ffb3c1; } .role-color-3 { background-color: #d9f99d; }
+        .role-color-4 { background-color: #e5e7eb; } .role-color-5 { background-color: #cce5ff; }
+        .role-color-6 { background-color: #d4edda; } .role-color-7 { background-color: #f8d7da; }
+        .role-color-8 { background-color: #fff3cd; } .role-color-9 { background-color: #d1ecf1; }
+        #reset-swaps-button { background-color: var(--danger-color); }
+        #reset-swaps-button:hover { background-color: #b02a37; }
+
+        /* Modal Styles */
+        .modal-overlay { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;}
+        .modal-content { background-color: #fff; margin: auto; padding: 30px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); width: 90%; max-width: 800px; position: relative; }
+        .modal-close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .modal-close:hover, .modal-close:focus { color: black; text-decoration: none; }
+        .modal-content h2 { margin: 0 0 15px 0; font-size: 1.5em; color: var(--primary-color); }
+        .management-section { margin-bottom: 25px; padding: 20px; border: 1px solid #bde0fe; background-color: #f7fcff; border-radius: 8px; }
+        .personnel-controls { display: flex; justify-content: center; align-items: center; gap: 15px; }
+        .personnel-controls label { font-weight: bold; }
+        .personnel-controls input[type="number"] { width: 70px; padding: 8px; font-family: 'Kanit', sans-serif; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; }
+        .duty-management-note { text-align: center; color: #555; font-size: 0.9em; margin-top: 10px; }
+        #duty-inputs-grid, #name-inputs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
+        .input-group label { font-weight: bold; margin-bottom: 5px; color: var(--primary-color); font-size: 0.9em; }
+        .input-group input { padding: 10px; border: 1px solid #bde0fe; border-radius: 5px; font-family: 'Kanit', sans-serif; font-size: 16px; width: 100%; box-sizing: border-box; }
+        .action-button-modal { background-color: var(--secondary-color); color: white; font-family: 'Kanit', sans-serif; font-size: 1em; font-weight: bold; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: background-color 0.3s; }
+        .action-button-modal:hover { background-color: #0096c7; }
+        .generate-link-container { text-align: center; margin-top: 30px; }
+        #generate-link-button { background-color: var(--success-color); font-size: 1.2em; padding: 15px 30px; }
+        #generate-link-button:hover { background-color: #157347; }
+        
+        /* Gemini Feature Styles */
+        #handover-button { background-color: var(--secondary-color); }
+        #handover-button:hover { background-color: #0096c7; }
+        #handover-notes-textarea { width: 100%; height: 400px; margin-top: 15px; font-family: 'Kanit', sans-serif; font-size: 1em; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; }
+        .modal-footer { margin-top: 20px; text-align: right; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span>🗓️ ตารางเวียนหน้าที่ "เภสัชกร" รพ.อุทัย ปี พ.ศ.</span>
+                <select id="year-selector"></select>
+            </h1>
+            <button id="settings-button" class="action-button">⚙️ ตั้งค่า</button>
+        </div>
+        
+        <div id="main-content">
+            <div class="view-nav">
+                <button id="nav-yearly" class="active">ภาพรวมรายปี</button>
+                <button id="nav-monthly">ภาพรวมรายเดือน</button>
+                <button id="nav-weekly">ภาพรวมรายสัปดาห์</button>
+                <button id="nav-summary">สรุปภาพรวม</button>
+            </div>
+            
+            <div id="yearly-view" class="view active">
+                 <div class="controls-container"><label for="yearly-pharmacist-selector">แสดงหน้าที่ของ:</label><select id="yearly-pharmacist-selector"></select></div>
+                 <div class="year-grid" id="yearly-grid"></div>
+            </div>
+            <div id="monthly-view" class="view">
+                 <div class="controls-container">
+                    <label for="monthly-selector">เลือกเดือน:</label>
+                    <select id="monthly-selector"></select>
+                    <button id="reset-swaps-button" class="action-button">ล้างการสลับเวร (เดือนนี้)</button>
+                 </div>
+                 <div class="table-responsive"><table><thead id="monthly-table-header"></thead><tbody id="monthly-table-body"></tbody></table></div>
+            </div>
+            <div id="weekly-view" class="view">
+                 <div class="controls-container">
+                    <label for="weekly-selector">เลือกสัปดาห์:</label>
+                    <select id="weekly-selector"></select>
+                    <button id="handover-button" class="action-button">✨ สร้างใบส่งเวร</button>
+                 </div>
+                 <div class="table-responsive"><table id="weekly-table"></table></div>
+            </div>
+            <div id="summary-view" class="view"><div class="table-responsive"><table id="summary-table"></table></div></div>
+            <div class="legend"></div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>⚙️ ตั้งค่าตารางเวร</h2>
+            <div class="management-section">
+                <h2>1. กำหนดจำนวนและหน้าที่</h2>
+                <div class="personnel-controls">
+                    <label for="pharmacist-count">จำนวนเภสัชกร:</label>
+                    <input type="number" id="pharmacist-count" min="1" value="6">
+                    <button id="update-personnel-button" class="action-button-modal">อัปเดต</button>
+                </div>
+                <div class="duty-management-note">หมายเหตุ: จำนวนหน้าที่ต้องเท่ากับจำนวนเภสัชกรเสมอ</div>
+                <div id="duty-inputs-grid"></div>
+            </div>
+            <div class="management-section">
+                <h2>2. กรอกชื่อเภสัชกร</h2>
+                <div id="name-inputs-grid"></div>
+            </div>
+            <div class="generate-link-container">
+                <button id="generate-link-button" class="action-button-modal">💾 บันทึกและสร้างลิงก์ใหม่</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Handover Notes Modal -->
+    <div id="handover-modal" class="modal-overlay" style="align-items: flex-start; padding-top: 5%;">
+        <div class="modal-content">
+            <span id="handover-close" class="modal-close">&times;</span>
+            <h2>✨ ใบส่งเวรประจำสัปดาห์ (AI Generated)</h2>
+            <div id="handover-spinner" class="spinner" style="display: none;"></div>
+            <textarea id="handover-notes-textarea"></textarea>
+            <div class="modal-footer">
+                <button id="copy-handover-button" class="action-button">คัดลอกทั้งหมด</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- GLOBAL STATE ---
+        const THAI_MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+        const THAI_DAYS_SHORT = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+        const THAI_DAYS_FULL = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+        const COLOR_PALETTE = ['role-color-0', 'role-color-1', 'role-color-2', 'role-color-3', 'role-color-4', 'role-color-5', 'role-color-6', 'role-color-7', 'role-color-8', 'role-color-9'];
+        let pharmacistCount = 0;
+        let duties = [];
+        let pharmacistNames = [];
+        let manualOverrides = {};
+        let firstSwapSelection = null;
+        let fullYearSchedule = {};
+
+        // --- DOM ELEMENTS ---
+        const yearSelector = document.getElementById('year-selector');
+        const views = document.querySelectorAll('.view');
+        const navButtons = document.querySelectorAll('.view-nav button');
+        const settingsModal = document.getElementById('settings-modal');
+        const settingsButton = document.getElementById('settings-button');
+        const closeModalButton = document.querySelector('.modal-close');
+        const personnelCountInput = document.getElementById('pharmacist-count');
+        const personnelUpdateButton = document.getElementById('update-personnel-button');
+        const dutyInputsGrid = document.getElementById('duty-inputs-grid');
+        const nameInputsGrid = document.getElementById('name-inputs-grid');
+        const generateLinkButton = document.getElementById('generate-link-button');
+        const resetSwapsButton = document.getElementById('reset-swaps-button');
+        const handoverButton = document.getElementById('handover-button');
+        const handoverModal = document.getElementById('handover-modal');
+        const handoverCloseButton = document.getElementById('handover-close');
+        const handoverSpinner = document.getElementById('handover-spinner');
+        const handoverTextarea = document.getElementById('handover-notes-textarea');
+        const copyHandoverButton = document.getElementById('copy-handover-button');
+
+
+        // --- CORE LOGIC ---
+        function generateFullYearSchedule(year) {
+            fullYearSchedule = {};
+            if (duties.length === 0 || pharmacistNames.length === 0) return;
+
+            const getPermutations = (arr) => {
+                if (arr.length <= 1) return [arr];
+                const perms = [];
+                for (let i = 0; i < arr.length; i++) {
+                    const current = arr[i];
+                    const remaining = arr.slice(0, i).concat(arr.slice(i + 1));
+                    getPermutations(remaining).forEach(p => perms.push([current, ...p]));
+                }
+                return perms;
+            };
+
+            let allMondays = [];
+            let date = new Date(year, 0, 1);
+            if (date.getDay() !== 1) { date.setDate(date.getDate() + (8 - date.getDay()) % 7); }
+            while(date.getFullYear() === year) {
+                allMondays.push(new Date(date));
+                date.setDate(date.getDate() + 7);
+            }
+
+            const firstWeekMondays = new Map();
+            const screenerDuty = duties.find(d => d.toLowerCase().includes('screen')) || duties[0];
+            const screenerAssignments = Array.from({length: 12}, (_, i) => pharmacistNames[i % pharmacistCount]);
+            for (let month = 0; month < 12; month++) {
+                let firstThursday = new Date(year, month, 1);
+                while(firstThursday.getDay() !== 4) { firstThursday.setDate(firstThursday.getDate() + 1); }
+                let mondayOfFirstWeek = new Date(firstThursday);
+                mondayOfFirstWeek.setDate(mondayOfFirstWeek.getDate() - 3);
+                firstWeekMondays.set(mondayOfFirstWeek.toISOString().split('T')[0], month);
+            }
+            
+            let lastWeekAssignments = null;
+            let workload = {};
+            pharmacistNames.forEach(name => {
+                workload[name] = {};
+                duties.forEach(duty => workload[name][duty] = 0);
+            });
+
+            const assignWeek = (monday, dutyMap) => {
+                for (let i = 0; i < 5; i++) {
+                    const d = new Date(monday);
+                    d.setDate(d.getDate() + i);
+                    if (d.getFullYear() === year) {
+                        const dateString = `${year}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                        fullYearSchedule[dateString] = {};
+                        for(const phName in dutyMap) {
+                            fullYearSchedule[dateString][dutyMap[phName]] = phName;
+                        }
+                    }
+                }
+            };
+            
+            allMondays.forEach(monday => {
+                const mondayString = monday.toISOString().split('T')[0];
+                let currentWeekAssignments = {};
+
+                const isSameDutyCategory = (d1, d2) => {
+                    if(!d1 || !d2) return false;
+                    if (d1.includes('Dispense') && d2.includes('Dispense')) return true;
+                    return d1 === d2;
+                };
+
+                const getBestPermutation = (people, tasks, lastAssignments, currentWorkload) => {
+                    const taskPerms = getPermutations(tasks);
+                    let bestPermutation = taskPerms[0] || [];
+                    let bestCost = Infinity;
+
+                    taskPerms.forEach(perm => {
+                        let repetitions = 0;
+                        if (lastAssignments) {
+                            people.forEach((p, i) => {
+                                if (isSameDutyCategory(lastAssignments[p], perm[i])) {
+                                    repetitions++;
+                                }
+                            });
+                        }
+
+                        const tempWorkload = JSON.parse(JSON.stringify(currentWorkload));
+                        people.forEach((p, i) => tempWorkload[p][perm[i]]++);
+                        
+                        let imbalanceScore = 0;
+                        const dutyArrays = {};
+                        duties.forEach(d => dutyArrays[d] = []);
+                        Object.keys(tempWorkload).forEach(p => {
+                           for(const d in tempWorkload[p]){
+                               dutyArrays[d].push(tempWorkload[p][d]);
+                           }
+                        });
+                         for (const duty in dutyArrays) {
+                            const counts = dutyArrays[duty];
+                            if (counts.length > 1) {
+                                const max = Math.max(...counts);
+                                const min = Math.min(...counts);
+                                imbalanceScore += (max - min);
+                            }
+                        }
+                        
+                        const cost = (repetitions * 1000) + imbalanceScore;
+                        if (cost < bestCost) {
+                            bestCost = cost;
+                            bestPermutation = perm;
+                        }
+                    });
+                    return bestPermutation;
+                };
+                
+                if (firstWeekMondays.has(mondayString) && pharmacistCount > 0) {
+                    const month = firstWeekMondays.get(mondayString);
+                    const designatedScreener = screenerAssignments[month];
+                    const otherPharmacists = pharmacistNames.filter(p => p !== designatedScreener);
+                    const otherDuties = duties.filter(d => d !== screenerDuty);
+                    
+                    let tempLastAssignments = null;
+                    if(lastWeekAssignments){
+                        tempLastAssignments = { ...lastWeekAssignments };
+                        delete tempLastAssignments[designatedScreener];
+                    }
+                    
+                    const bestOtherPermutation = getBestPermutation(otherPharmacists, otherDuties, tempLastAssignments, workload);
+                    
+                    currentWeekAssignments[designatedScreener] = screenerDuty;
+                    otherPharmacists.forEach((p, i) => currentWeekAssignments[p] = bestOtherPermutation[i]);
+
+                } else {
+                    const bestPermutation = getBestPermutation(pharmacistNames, duties, lastWeekAssignments, workload);
+                    pharmacistNames.forEach((p, i) => currentWeekAssignments[p] = bestPermutation[i]);
+                }
+                
+                assignWeek(monday, currentWeekAssignments);
+                lastWeekAssignments = currentWeekAssignments;
+                for (const phName in currentWeekAssignments) {
+                    workload[phName][currentWeekAssignments[phName]]++;
+                }
+            });
+        }
+
+
+        function getDutiesForDate(date) {
+            if (duties.length === 0 || pharmacistNames.length === 0) return null;
+            const dayOfWeek = date.getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 6) return null;
+
+            const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            const baseDutyMap = fullYearSchedule[dateString] || {};
+            
+            const override = manualOverrides[dateString];
+            if (override) {
+                return { ...baseDutyMap, ...override };
+            }
+            return baseDutyMap;
+        }
+
+        // --- VIEW & UI LOGIC ---
+        function switchView(viewId) { 
+            views.forEach(view => view.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`nav-${viewId.split('-')[0]}`).classList.add('active');
+        }
+        function getRoleClass(dutyKey) {
+            const dutyIndex = duties.indexOf(dutyKey);
+            return COLOR_PALETTE[dutyIndex % COLOR_PALETTE.length] || '';
+        }
+
+        // --- RENDER VIEWS ---
+        function renderYearlyView() { 
+            const year = parseInt(yearSelector.value) - 543;
+            const grid = document.getElementById('yearly-grid');
+            const selector = document.getElementById('yearly-pharmacist-selector');
+            if (pharmacistNames.length === 0) return;
+            const selectedPharmacistIndex = selector.value ? parseInt(selector.value) : 0;
+            grid.innerHTML = '';
+            THAI_MONTHS.forEach((monthName, monthIndex) => {
+                const monthContainer = document.createElement('div');
+                monthContainer.className = 'month-container';
+                monthContainer.innerHTML = `<div class="month-header">${monthName}</div>`;
+                const calendarGrid = document.createElement('div');
+                calendarGrid.className = 'calendar-grid';
+                THAI_DAYS_SHORT.forEach(day => calendarGrid.innerHTML += `<div class="day-header">${day}</div>`);
+                const firstDay = new Date(year, monthIndex, 1);
+                for (let i = 0; i < firstDay.getDay(); i++) { calendarGrid.innerHTML += `<div class="day-cell empty"></div>`; }
+                const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, monthIndex, day);
+                    const dutiesMap = getDutiesForDate(date);
+                    let cellContent = `<div class="day-number">${day}</div>`;
+                    if (dutiesMap) {
+                        for (const duty in dutiesMap) {
+                            if (dutiesMap[duty] === pharmacistNames[selectedPharmacistIndex]) {
+                                cellContent += `<div class="duty-marker ${getRoleClass(duty)}">${duty.substring(0,3)}</div>`;
+                                break;
+                            }
+                        }
+                    }
+                    calendarGrid.innerHTML += `<div class="day-cell">${cellContent}</div>`;
+                }
+                monthContainer.appendChild(calendarGrid);
+                grid.appendChild(monthContainer);
+            });
+        }
+        function renderMonthlyView() { 
+            const year = parseInt(yearSelector.value) - 543;
+            const selectedMonth = parseInt(document.getElementById('monthly-selector').value);
+            const header = document.getElementById('monthly-table-header');
+            const body = document.getElementById('monthly-table-body');
+            header.innerHTML = ''; body.innerHTML = '';
+            
+            let headerRow = '<tr><th>วันที่</th><th>วัน</th>';
+            duties.forEach(duty => headerRow += `<th>${duty}</th>`);
+            headerRow += '</tr>';
+            header.innerHTML = headerRow;
+
+            const daysInMonth = new Date(year, selectedMonth + 1, 0).getDate();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, selectedMonth, day);
+                const dateString = `${year}-${String(selectedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayOfWeek = date.getDay();
+                const row = document.createElement('tr');
+                if (dayOfWeek === 0 || dayOfWeek === 6) row.className = 'weekend-row';
+                row.innerHTML = `<td>${day}</td><td>${THAI_DAYS_SHORT[dayOfWeek]}</td>`;
+                const dutiesMap = getDutiesForDate(date);
+                duties.forEach(duty => {
+                    const cell = document.createElement('td');
+                    if (dutiesMap && dutiesMap[duty]) {
+                        cell.textContent = dutiesMap[duty];
+                        cell.className = getRoleClass(duty);
+                        cell.classList.add('swappable');
+                        cell.dataset.date = dateString;
+                        cell.dataset.duty = duty;
+                        cell.addEventListener('click', handleSwapClick);
+                    } else { cell.textContent = '-'; }
+                    row.appendChild(cell);
+                });
+                body.appendChild(row);
+            }
+        }
+        function renderWeeklyView() {
+            const year = parseInt(yearSelector.value) - 543;
+            const selectedWeekIndex = parseInt(document.getElementById('weekly-selector').value);
+            const table = document.getElementById('weekly-table');
+            table.innerHTML = '';
+            
+            let headerHtml = '<thead><tr><th>หน้าที่</th>';
+            for (let i = 0; i < 7; i++) {
+                const firstDayOfYear = new Date(year, 0, 1);
+                const date = new Date(year, 0, (selectedWeekIndex * 7) + i - firstDayOfYear.getDay() + 1);
+                headerHtml += `<th>${THAI_DAYS_FULL[date.getDay()]}<br><small>${date.getDate()}/${date.getMonth()+1}</small></th>`;
+            }
+            headerHtml += '</tr></thead>';
+            table.innerHTML = headerHtml;
+
+            let bodyHtml = '<tbody>';
+            duties.forEach(duty => {
+                bodyHtml += `<tr><td class="duty-label ${getRoleClass(duty)}">${duty}</td>`;
+                for (let i = 0; i < 7; i++) {
+                    const firstDayOfYear = new Date(year, 0, 1);
+                    const date = new Date(year, 0, (selectedWeekIndex * 7) + i - firstDayOfYear.getDay() + 1);
+                    const dutiesForDay = getDutiesForDate(date);
+                    let phName = '-';
+                    if (dutiesForDay && dutiesForDay[duty]) { phName = dutiesForDay[duty]; }
+                    bodyHtml += `<td>${phName}</td>`;
+                }
+                bodyHtml += '</tr>';
+            });
+            bodyHtml += '</tbody>';
+            table.innerHTML += bodyHtml;
+        }
+        function renderSummaryView() { 
+            const year = parseInt(yearSelector.value) - 543;
+            const summaryTable = document.getElementById('summary-table');
+            const summaryData = {};
+            pharmacistNames.forEach(name => {
+                summaryData[name] = {};
+                duties.forEach(key => summaryData[name][key] = 0);
+            });
+
+            const date = new Date(year, 0, 1);
+            while (date.getFullYear() === year) {
+                const dutiesMap = getDutiesForDate(date);
+                if (dutiesMap) {
+                    for (const dutyKey in dutiesMap) {
+                        const pharmacistName = dutiesMap[dutyKey];
+                        if (summaryData[pharmacistName]) {
+                            summaryData[pharmacistName][dutyKey]++;
+                        }
+                    }
+                }
+                date.setDate(date.getDate() + 1);
+            }
+            
+            summaryTable.innerHTML = '';
+            let headerHtml = '<thead><tr><th>เภสัชกร</th>';
+            duties.forEach(key => headerHtml += `<th>${key}</th>`);
+            headerHtml += '</tr></thead>';
+            summaryTable.innerHTML = headerHtml;
+
+            let bodyHtml = '<tbody>';
+            pharmacistNames.forEach(name => {
+                bodyHtml += `<tr><td>${name}</td>`;
+                duties.forEach(duty => {
+                    const dayCount = summaryData[name][duty] || 0;
+                    let displayStr = '0 วัน';
+                    if (dayCount > 0) {
+                        const weekCount = Math.floor(dayCount / 5);
+                        const remainingDays = dayCount % 5;
+                        if (weekCount > 0 && remainingDays > 0) { displayStr = `${weekCount} สัปดาห์ / ${remainingDays} วัน`; }
+                        else if (weekCount > 0) { displayStr = `${weekCount} สัปดาห์`; }
+                        else { displayStr = `${remainingDays} วัน`; }
+                    }
+                    bodyHtml += `<td>${displayStr} (${dayCount} วัน)</td>`;
+                });
+                bodyHtml += '</tr>';
+            });
+            bodyHtml += '</tbody>';
+            summaryTable.innerHTML += bodyHtml;
+        }
+        function renderLegend() { 
+            const legendContainer = document.querySelector('.legend');
+            legendContainer.innerHTML = '';
+            duties.forEach((duty, index) => {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                legendItem.innerHTML = `<div class="legend-color ${COLOR_PALETTE[index % COLOR_PALETTE.length]}"></div>${duty}`;
+                legendContainer.appendChild(legendItem);
+            });
+        }
+        function updateAllViews() { 
+            const year = parseInt(yearSelector.value) - 543;
+            generateFullYearSchedule(year);
+
+            const yearlyPhSelector = document.getElementById('yearly-pharmacist-selector');
+            const currentSelectedIndex = yearlyPhSelector ? yearlyPhSelector.value : 0;
+            if (yearlyPhSelector) yearlyPhSelector.innerHTML = '';
+            
+            pharmacistNames.forEach((name, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = name || `ภก. ${index + 1}`;
+                if(yearlyPhSelector) yearlyPhSelector.appendChild(option);
+            });
+            if(yearlyPhSelector) yearlyPhSelector.value = currentSelectedIndex;
+            
+            renderLegend();
+            renderYearlyView();
+            renderMonthlyView();
+            renderWeeklyView();
+            renderSummaryView();
+        }
+        
+        // --- SWAP LOGIC ---
+        function handleSwapClick(event) {
+            const cell = event.currentTarget;
+            const { date, duty } = cell.dataset;
+            if (!firstSwapSelection) {
+                document.querySelectorAll('.swap-selected').forEach(el => el.classList.remove('swap-selected'));
+                cell.classList.add('swap-selected');
+                firstSwapSelection = { cell, date, duty, pharmacist: cell.textContent };
+            } else {
+                if (firstSwapSelection.cell === cell) {
+                    cell.classList.remove('swap-selected');
+                    firstSwapSelection = null;
+                } else if (firstSwapSelection.date === date) {
+                    const secondSelection = { cell, date, duty, pharmacist: cell.textContent };
+                    if (!manualOverrides[date]) manualOverrides[date] = {};
+                    manualOverrides[date][firstSwapSelection.duty] = secondSelection.pharmacist;
+                    manualOverrides[date][secondSelection.duty] = firstSwapSelection.pharmacist;
+                    firstSwapSelection.cell.classList.add('swapped-animation');
+                    secondSelection.cell.classList.add('swapped-animation');
+                    setTimeout(() => {
+                        firstSwapSelection = null;
+                        updateAllViews(); 
+                        generateShareLink(true);
+                    }, 500);
+                } else {
+                    document.querySelectorAll('.swap-selected').forEach(el => el.classList.remove('swap-selected'));
+                    cell.classList.add('swap-selected');
+                    firstSwapSelection = { cell, date, duty, pharmacist: cell.textContent };
+                }
+            }
+        }
+        
+        function handleResetSwaps() {
+            const selectedMonth = parseInt(document.getElementById('monthly-selector').value);
+            const year = parseInt(yearSelector.value) - 543;
+            if(confirm(`คุณต้องการล้างการสลับเวรทั้งหมดในเดือน${THAI_MONTHS[selectedMonth]}ใช่หรือไม่?`)) {
+                for(const dateStr in manualOverrides) {
+                    const date = new Date(dateStr);
+                    if(date.getFullYear() === year && date.getMonth() === selectedMonth) {
+                        delete manualOverrides[dateStr];
+                    }
+                }
+                updateAllViews();
+                generateShareLink(true);
+            }
+        }
+
+        // --- MODAL & SETTINGS LOGIC ---
+        function renderSettingsInputs(count) {
+            const defaultDuties = ['Screener', 'IPD', 'Checker', 'Other', 'Dispense 1', 'Dispense 2'];
+            dutyInputsGrid.innerHTML = '';
+            nameInputsGrid.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const dutyDiv = document.createElement('div');
+                dutyDiv.className = 'input-group';
+                const dutyName = duties[i] || defaultDuties[i] || `หน้าที่ ${i + 1}`;
+                dutyDiv.innerHTML = `<label>หน้าที่ ${i + 1}:</label><input type="text" class="duty-name" data-id="duty${i + 1}" value="${dutyName}">`;
+                dutyInputsGrid.appendChild(dutyDiv);
+                
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'input-group';
+                const phName = pharmacistNames[i] || `ภก. ${String.fromCharCode(65 + i)}`;
+                nameDiv.innerHTML = `<label>เภสัชกร ${i + 1}:</label><input type="text" class="pharmacist-name" data-id="ph${i + 1}" value="${phName}">`;
+                nameInputsGrid.appendChild(nameDiv);
+            }
+        }
+        function handlePersonnelUpdate() {
+            const newCount = parseInt(personnelCountInput.value);
+            if (newCount > 0) {
+                renderSettingsInputs(newCount);
+            }
+        }
+        function generateShareLink(silent = false) {
+            let baseUrl = window.location.href.split('?')[0];
+            const params = new URLSearchParams();
+            params.append('year', yearSelector.value);
+            
+            const countInSettings = parseInt(personnelCountInput.value);
+            const dutiesInSettings = Array.from(document.querySelectorAll('#duty-inputs-grid .duty-name')).map(input => input.value.trim());
+            const namesInSettings = Array.from(document.querySelectorAll('#name-inputs-grid .pharmacist-name')).map(input => input.value.trim());
+
+            params.append('count', silent ? pharmacistCount : countInSettings);
+            
+            const dutiesToSave = silent ? duties : dutiesInSettings;
+            const namesToSave = silent ? pharmacistNames : namesInSettings;
+
+            dutiesToSave.forEach((duty, i) => params.append(`duty${i+1}`, duty));
+            namesToSave.forEach((name, i) => params.append(`ph${i+1}`, name));
+
+            if (Object.keys(manualOverrides).length > 0) {
+                const jsonString = JSON.stringify(manualOverrides);
+                params.append('overrides', encodeURIComponent(jsonString));
+            }
+
+            const shareableLink = `${baseUrl}?${params.toString()}`;
+            
+            if (silent) {
+                 history.pushState(null, '', shareableLink);
+            } else {
+                navigator.clipboard.writeText(shareableLink).then(() => {
+                    alert('คัดลอกลิงก์สำเร็จแล้ว!\nคุณสามารถส่งลิงก์นี้ให้ทีมเพื่อดูตารางเวรได้เลย');
+                    settingsModal.style.display = 'none';
+                    if (window.location.href !== shareableLink) {
+                        window.location.href = shareableLink;
+                    }
+                }, () => {
+                    prompt("คัดลอกลิงก์นี้เพื่อแชร์ให้ทีม:", shareableLink);
+                });
+            }
+        }
+        
+        // --- INITIALIZATION ---
+        function loadFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            if (!params.has('count')) {
+                pharmacistCount = 6;
+                duties = ['Screener', 'IPD', 'Checker', 'Other', 'Dispense 1', 'Dispense 2'];
+                pharmacistNames = ['ภก. A', 'ภก. B', 'ภก. C', 'ภก. D', 'ภก. E', 'ภก. F'];
+            } else {
+                const yearFromUrl = params.get('year');
+                if (yearFromUrl) if (Array.from(yearSelector.options).some(opt => opt.value === yearFromUrl)) yearSelector.value = yearFromUrl;
+                
+                pharmacistCount = parseInt(params.get('count'));
+                duties = [];
+                for (let i = 0; i < pharmacistCount; i++) duties.push(params.get(`duty${i+1}`) || `หน้าที่ ${i+1}`);
+                pharmacistNames = [];
+                for (let i = 0; i < pharmacistCount; i++) pharmacistNames.push(params.get(`ph${i+1}`) || `ภก. ${String.fromCharCode(65 + i)}`);
+            
+                if (params.has('overrides')) {
+                    try {
+                        manualOverrides = JSON.parse(decodeURIComponent(params.get('overrides')));
+                    } catch (e) {
+                        console.error("Could not parse overrides from URL", e);
+                        manualOverrides = {};
+                    }
+                }
+            }
+        }
+
+        function populateYearSelector() { 
+            const currentCEYear = new Date().getFullYear();
+            for (let i = currentCEYear - 10; i <= currentCEYear + 10; i++) {
+                const option = document.createElement('option');
+                const yearBE = i + 543;
+                option.value = yearBE;
+                option.textContent = yearBE;
+                yearSelector.appendChild(option);
+            }
+             yearSelector.value = currentCEYear + 543;
+        }
+        
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        function populateSelectors(year) {
+            const monthlySelector = document.getElementById('monthly-selector');
+            const weeklySelector = document.getElementById('weekly-selector');
+            monthlySelector.innerHTML = '';
+            THAI_MONTHS.forEach((m, i) => monthlySelector.innerHTML += `<option value="${i}">${m}</option>`);
+
+            weeklySelector.innerHTML = '';
+            const yearFirstDay = new Date(year, 0, 1);
+            let weekCount = 52;
+            const weekOfDec31 = getWeekNumber(new Date(year, 11, 31));
+            if (weekOfDec31 === 53 || (weekOfDec31 === 1 && new Date(year,11,31).getMonth() === 11) ) {
+                weekCount = 53;
+            } else if (new Date(year,0,1).getDay() === 4 || new Date(year-1,11,31).getDay() === 3){
+                 weekCount = 53;
+            }
+
+            for(let i=0; i < weekCount; i++) {
+                 let firstDayOfWeek = new Date(year, 0, 1 + (i * 7));
+                 let dayOfWeek = firstDayOfWeek.getDay();
+                 let diff = firstDayOfWeek.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                 let date = new Date(firstDayOfWeek.setDate(diff));
+
+                 weeklySelector.innerHTML += `<option value="${i}">สัปดาห์ที่ ${i+1} (เริ่ม ${date.getDate()}/${date.getMonth()+1})</option>`;
+            }
+            const today = new Date();
+            if (today.getFullYear() === year) {
+                monthlySelector.value = today.getMonth();
+                const weekVal = getWeekNumber(today) - 1;
+                if (weeklySelector.options[weekVal]) weeklySelector.value = weekVal;
+            } else {
+                monthlySelector.value = 0;
+                weeklySelector.value = 0;
+            }
+        }
+        
+        function handleYearChange() {
+            const yearBE = parseInt(yearSelector.value);
+            populateSelectors(yearBE - 543);
+            updateAllViews();
+        }
+
+        function initialize() {
+            populateYearSelector();
+            loadFromURL();
+            
+            const year = parseInt(yearSelector.value) - 543;
+            populateSelectors(year);
+            updateAllViews();
+            switchView('yearly-view');
+            
+            navButtons.forEach(btn => btn.addEventListener('click', () => switchView(btn.id.replace('nav-', '') + '-view')));
+            yearSelector.addEventListener('change', handleYearChange);
+            document.getElementById('yearly-pharmacist-selector').addEventListener('change', renderYearlyView);
+            document.getElementById('monthly-selector').addEventListener('change', renderMonthlyView);
+            document.getElementById('weekly-selector').addEventListener('change', renderWeeklyView);
+            resetSwapsButton.addEventListener('click', handleResetSwaps);
+            
+            settingsButton.addEventListener('click', () => {
+                personnelCountInput.value = pharmacistCount || 6;
+                renderSettingsInputs(personnelCountInput.value);
+                settingsModal.style.display = 'block';
+            });
+            closeModalButton.addEventListener('click', () => settingsModal.style.display = 'none');
+            window.addEventListener('click', (event) => { if (event.target == settingsModal) settingsModal.style.display = 'none'; });
+            personnelUpdateButton.addEventListener('click', handlePersonnelUpdate);
+            generateLinkButton.addEventListener('click', () => generateShareLink(false));
+        }
+
+        window.addEventListener('load', initialize);
+    </script>
+</body>
+</html>
+
