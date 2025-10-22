@@ -65,8 +65,8 @@
         #reset-swaps-button:hover { background-color: #b02a37; }
 
         /* Modal Styles */
-        .modal-overlay { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;}
-        .modal-content { background-color: #fff; margin: auto; padding: 30px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); width: 90%; max-width: 800px; position: relative; }
+        .modal-overlay { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fff; margin: 5% auto; padding: 30px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); width: 90%; max-width: 800px; position: relative; }
         .modal-close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
         .modal-close:hover, .modal-close:focus { color: black; text-decoration: none; }
         .modal-content h2 { margin: 0 0 15px 0; font-size: 1.5em; color: var(--primary-color); }
@@ -83,14 +83,6 @@
         .generate-link-container { text-align: center; margin-top: 30px; }
         #generate-link-button { background-color: var(--success-color); font-size: 1.2em; padding: 15px 30px; }
         #generate-link-button:hover { background-color: #157347; }
-        
-        /* Gemini Feature Styles */
-        #handover-button { background-color: var(--secondary-color); }
-        #handover-button:hover { background-color: #0096c7; }
-        #handover-notes-textarea { width: 100%; height: 400px; margin-top: 15px; font-family: 'Kanit', sans-serif; font-size: 1em; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; }
-        .modal-footer { margin-top: 20px; text-align: right; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -124,11 +116,7 @@
                  <div class="table-responsive"><table><thead id="monthly-table-header"></thead><tbody id="monthly-table-body"></tbody></table></div>
             </div>
             <div id="weekly-view" class="view">
-                 <div class="controls-container">
-                    <label for="weekly-selector">เลือกสัปดาห์:</label>
-                    <select id="weekly-selector"></select>
-                    <button id="handover-button" class="action-button">✨ สร้างใบส่งเวร</button>
-                 </div>
+                 <div class="controls-container"><label for="weekly-selector">เลือกสัปดาห์:</label><select id="weekly-selector"></select></div>
                  <div class="table-responsive"><table id="weekly-table"></table></div>
             </div>
             <div id="summary-view" class="view"><div class="table-responsive"><table id="summary-table"></table></div></div>
@@ -161,20 +149,6 @@
         </div>
     </div>
 
-    <!-- Handover Notes Modal -->
-    <div id="handover-modal" class="modal-overlay" style="align-items: flex-start; padding-top: 5%;">
-        <div class="modal-content">
-            <span id="handover-close" class="modal-close">&times;</span>
-            <h2>✨ ใบส่งเวรประจำสัปดาห์ (AI Generated)</h2>
-            <div id="handover-spinner" class="spinner" style="display: none;"></div>
-            <textarea id="handover-notes-textarea"></textarea>
-            <div class="modal-footer">
-                <button id="copy-handover-button" class="action-button">คัดลอกทั้งหมด</button>
-            </div>
-        </div>
-    </div>
-
-
     <script>
         // --- GLOBAL STATE ---
         const THAI_MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
@@ -201,15 +175,15 @@
         const nameInputsGrid = document.getElementById('name-inputs-grid');
         const generateLinkButton = document.getElementById('generate-link-button');
         const resetSwapsButton = document.getElementById('reset-swaps-button');
-        const handoverButton = document.getElementById('handover-button');
-        const handoverModal = document.getElementById('handover-modal');
-        const handoverCloseButton = document.getElementById('handover-close');
-        const handoverSpinner = document.getElementById('handover-spinner');
-        const handoverTextarea = document.getElementById('handover-notes-textarea');
-        const copyHandoverButton = document.getElementById('copy-handover-button');
-
 
         // --- CORE LOGIC ---
+        function getWeekNumber(d) { 
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
         function generateFullYearSchedule(year) {
             fullYearSchedule = {};
             if (duties.length === 0 || pharmacistNames.length === 0) return;
@@ -472,8 +446,12 @@
                     const date = new Date(year, 0, (selectedWeekIndex * 7) + i - firstDayOfYear.getDay() + 1);
                     const dutiesForDay = getDutiesForDate(date);
                     let phName = '-';
-                    if (dutiesForDay && dutiesForDay[duty]) { phName = dutiesForDay[duty]; }
-                    bodyHtml += `<td>${phName}</td>`;
+                    let cellClass = '';
+                    if (dutiesForDay && dutiesForDay[duty]) {
+                        phName = dutiesForDay[duty];
+                        cellClass = getRoleClass(duty);
+                    }
+                    bodyHtml += `<td class="${cellClass}">${phName}</td>`;
                 }
                 bodyHtml += '</tr>';
             });
@@ -712,7 +690,6 @@
             }
              yearSelector.value = currentCEYear + 543;
         }
-        
         function getWeekNumber(d) {
             d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
             d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
@@ -727,28 +704,36 @@
             THAI_MONTHS.forEach((m, i) => monthlySelector.innerHTML += `<option value="${i}">${m}</option>`);
 
             weeklySelector.innerHTML = '';
-            const yearFirstDay = new Date(year, 0, 1);
-            let weekCount = 52;
-            const weekOfDec31 = getWeekNumber(new Date(year, 11, 31));
-            if (weekOfDec31 === 53 || (weekOfDec31 === 1 && new Date(year,11,31).getMonth() === 11) ) {
-                weekCount = 53;
-            } else if (new Date(year,0,1).getDay() === 4 || new Date(year-1,11,31).getDay() === 3){
-                 weekCount = 53;
+            let mondaysInYear = [];
+            let d = new Date(year, 0, 1);
+            if (d.getDay() !== 1) { d.setDate(d.getDate() + (8 - d.getDay()) % 7); }
+            if (d.getFullYear() < year) { d.setDate(d.getDate() + 7); }
+            
+            while(d.getFullYear() === year) {
+                mondaysInYear.push(new Date(d));
+                d.setDate(d.getDate() + 7);
             }
+            
+            mondaysInYear.forEach((monday, i) => {
+                weeklySelector.innerHTML += `<option value="${i}">สัปดาห์ที่ ${i+1} (เริ่ม ${monday.getDate()}/${monday.getMonth()+1})</option>`;
+            });
 
-            for(let i=0; i < weekCount; i++) {
-                 let firstDayOfWeek = new Date(year, 0, 1 + (i * 7));
-                 let dayOfWeek = firstDayOfWeek.getDay();
-                 let diff = firstDayOfWeek.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-                 let date = new Date(firstDayOfWeek.setDate(diff));
-
-                 weeklySelector.innerHTML += `<option value="${i}">สัปดาห์ที่ ${i+1} (เริ่ม ${date.getDate()}/${date.getMonth()+1})</option>`;
-            }
             const today = new Date();
             if (today.getFullYear() === year) {
                 monthlySelector.value = today.getMonth();
-                const weekVal = getWeekNumber(today) - 1;
-                if (weeklySelector.options[weekVal]) weeklySelector.value = weekVal;
+                let weekVal = -1;
+                 for(let i=0; i < mondaysInYear.length; i++) {
+                    const monday = mondaysInYear[i];
+                    const nextMonday = new Date(monday);
+                    nextMonday.setDate(nextMonday.getDate() + 7);
+                    if (today >= monday && today < nextMonday) {
+                        weekVal = i;
+                        break;
+                    }
+                }
+                if (weekVal !== -1 && weeklySelector.options[weekVal]) {
+                    weeklySelector.value = weekVal;
+                }
             } else {
                 monthlySelector.value = 0;
                 weeklySelector.value = 0;
@@ -792,4 +777,5 @@
     </script>
 </body>
 </html>
+
 
