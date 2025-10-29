@@ -177,8 +177,9 @@
         }
         #monthly-view .calendar-grid .day-cell {
             /* MODIFIED: Set fixed height for uniform cells */
-            height: 160px; 
-            /* min-height: 140px; /* Removed min-height */
+            /* height: 160px; */ /* REMOVED: Fixed height caused overflow */
+            height: auto; /* NEW: Allow height to grow with content */
+            min-height: 160px; /* NEW: Keep cells looking uniform */
             font-size: 0.7em; 
             vertical-align: top;
             padding: 4px;
@@ -224,10 +225,10 @@
         }
         #monthly-view .duty-item {
             /* MODIFIED: Increased font size for readability */
-            font-size: 1em; 
+            font-size: 0.9em; /* MODIFIED: Reduced from 1em to help fit */
             padding: 3px 5px;
             border-radius: 4px;
-            white-space: nowrap;
+            /* white-space: nowrap; */ /* REMOVED: Allow wrapping for long duty names */
             overflow: hidden;
             text-overflow: ellipsis;
             border: 1px solid transparent; /* Placeholder for alignment */
@@ -1546,6 +1547,7 @@
     </script>
 </body>
 </html>
+
 
 
 
