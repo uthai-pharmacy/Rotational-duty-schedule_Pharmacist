@@ -29,6 +29,28 @@
         .controls-container { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; margin-bottom: 25px; padding: 15px; background-color: var(--light-bg); border-radius: 8px; gap: 20px; }
         .controls-container label { font-weight: bold; color: var(--primary-color); }
         .controls-container select { padding: 8px 12px; font-family: 'Kanit', sans-serif; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; width: auto; }
+        
+        /* NEW: Styles for Swap Mode */
+        .swap-mode-controls {
+            display: flex;
+            gap: 15px;
+            background-color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .swap-mode-controls label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: normal;
+            color: #333;
+            cursor: pointer;
+        }
+        .swap-mode-controls input[type="radio"] {
+            cursor: pointer;
+        }
+
         .view { display: none; }
         .view.active { display: block; }
         #yearly-view .year-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
@@ -36,17 +58,56 @@
         .month-header { text-align: center; font-weight: bold; font-size: 1.2em; margin-bottom: 10px; color: var(--primary-color); }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         .calendar-grid .day-header { font-weight: bold; text-align: center; font-size: 0.8em; }
-        .calendar-grid .day-cell { height: 35px; border: 1px solid #eee; text-align: center; font-size: 0.8em; position: relative; }
-        .day-cell .day-number { position: absolute; top: 2px; left: 4px; }
+        /* MODIFIED: Reverted calendar styles to original */
+        .calendar-grid .day-cell { 
+            height: 35px; 
+            border: 1px solid #eee; 
+            text-align: center; 
+            font-size: 0.8em; 
+            position: relative; 
+        }
+        .day-cell .day-number { 
+            position: absolute; 
+            top: 2px; 
+            left: 4px; 
+            font-weight: normal; 
+            color: #333;
+            margin-bottom: 0;
+        }
         .day-cell .duty-marker { font-weight: bold; display: flex; justify-content: center; align-items: center; height: 100%; border-radius: 3px; }
+        
+        /* REMOVED: Styles for duty list in calendar cells */
+        
+
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
         th, td { border: 1px solid #ddd; padding: 12px 8px; text-align: center; font-size: 14px; white-space: nowrap; }
         th { background-color: var(--primary-color); color: white; font-weight: bold; }
         .weekend-row { background-color: #fffbeb !important; }
-        #monthly-table-body td.swappable { cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-        #monthly-table-body td.swappable:hover { transform: scale(1.05); box-shadow: 0 0 10px var(--secondary-color); z-index: 10; position: relative; }
-        #monthly-table-body td.swap-selected { outline: 3px solid var(--secondary-color); outline-offset: -3px; background-color: #e0f7fa !important; }
+        /* MODIFIED: Updated selectors to include new .day-cell swappables */
+        #monthly-table-body td.swappable, #compare-view .day-cell.swappable { 
+            cursor: pointer; 
+            transition: transform 0.2s, box-shadow 0.2s; 
+        }
+        #monthly-table-body td.swappable:hover, #compare-view .day-cell.swappable:hover { 
+            transform: scale(1.05); 
+            box-shadow: 0 0 10px var(--secondary-color); 
+            z-index: 10; 
+            position: relative; 
+        }
+        /* MODIFIED: Daily swap selection */
+        .swap-selected { 
+            outline: 3px solid var(--secondary-color) !important; 
+            outline-offset: -3px; 
+            background-color: #e0f7fa !important; 
+        }
+        /* NEW: Weekly swap selection highlight */
+        .week-selected {
+            outline: 3px solid #f0ad4e; /* Warning yellow/orange */
+            outline-offset: -3px;
+            background-color: #fef8e7;
+        }
+
         .swapped-animation { animation: flash-success 1s; }
         @keyframes flash-success { 0% { background-color: var(--success-color); color: white; } 100% { } }
         #summary-view th, #summary-view td { font-size: 1.1em; padding: 14px; }
@@ -63,6 +124,20 @@
         .role-color-8 { background-color: #fff3cd; } .role-color-9 { background-color: #d1ecf1; }
         #reset-swaps-button { background-color: var(--danger-color); }
         #reset-swaps-button:hover { background-color: #b02a37; }
+
+        /* MODIFIED: Added style for highlighting repeat duties */
+        .duty-repeat-warning {
+            outline: 3px solid var(--danger-color) !important;
+            outline-offset: -2px;
+            box-shadow: 0 0 10px var(--danger-color);
+            animation: pulse-danger 1.5s infinite;
+        }
+        @keyframes pulse-danger {
+            0% { box-shadow: 0 0 5px rgba(220, 53, 69, 0.4); }
+            50% { box-shadow: 0 0 15px rgba(220, 53, 69, 1); }
+            100% { box-shadow: 0 0 5px rgba(220, 53, 69, 0.4); }
+        }
+
 
         /* Modal Styles */
         .modal-overlay { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
@@ -83,6 +158,137 @@
         .generate-link-container { text-align: center; margin-top: 30px; }
         #generate-link-button { background-color: var(--success-color); font-size: 1.2em; padding: 15px 30px; }
         #generate-link-button:hover { background-color: #157347; }
+        
+        /* NEW: Styles to reduce calendar size specifically in compare-view AND monthly-view */
+        #compare-view .month-container, #monthly-view .month-container {
+            padding: 8px; /* Reduced from 10px */
+        }
+        #compare-view .calendar-grid, #monthly-view .calendar-grid {
+            gap: 2px; /* Reduced from 4px */
+        }
+        #compare-view .calendar-grid .day-header, #monthly-view .calendar-grid .day-header {
+            font-size: 0.7em; /* Reduced from 0.8em */
+            padding-bottom: 2px;
+        }
+        /* MODIFIED: Adjusted height for monthly-view to fit all duties */
+        #compare-view .calendar-grid .day-cell {
+             height: 30px; /* Keep compare view small */
+             font-size: 0.7em; 
+        }
+        #monthly-view .calendar-grid .day-cell {
+            /* MODIFIED: Set fixed height for uniform cells */
+            height: 160px; 
+            /* min-height: 140px; /* Removed min-height */
+            font-size: 0.7em; 
+            vertical-align: top;
+            padding: 4px;
+            /* NEW: Ensure content starts top-left */
+            display: flex; 
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        /* MODIFIED: Split the selector. Compare view uses absolute positioning. */
+        #compare-view .day-cell .day-number {
+            position: absolute; /* Reverted */
+            top: 2px;
+            left: 2px;
+            font-weight: normal; /* Reverted */
+            margin-bottom: 0;
+        }
+         /* Monthly view uses relative positioning */
+        #monthly-view .day-cell .day-number {
+            position: relative; 
+            font-weight: bold; 
+            margin-bottom: 4px;
+            /* Removed top/left */
+        }
+
+        /* MODIFIED: Restored the duty-marker style for compare-view */
+        #compare-view .day-cell .duty-marker {
+            font-size: 0.9em; /* Make marker text slightly smaller */
+            font-weight: bold; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100%; 
+            border-radius: 3px;
+        }
+        
+
+        /* NEW: Styles for duty list in monthly view calendar cells (Re-added) */
+        #monthly-view .duty-list {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            width: 100%; /* Ensure list takes full width */
+        }
+        #monthly-view .duty-item {
+            /* MODIFIED: Increased font size for readability */
+            font-size: 1em; 
+            padding: 3px 5px;
+            border-radius: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border: 1px solid transparent; /* Placeholder for alignment */
+        }
+        /* No hover/swap styles needed for monthly view items */
+        #monthly-view .duty-item.duty-repeat-warning {
+             box-shadow: 0 0 8px var(--danger-color);
+            border: 1px solid var(--danger-color);
+            animation: pulse-danger-subtle 1.5s infinite;
+        }
+         @keyframes pulse-danger-subtle {
+            0% { box-shadow: 0 0 3px rgba(220, 53, 69, 0.3); }
+            50% { box-shadow: 0 0 10px rgba(220, 53, 69, 0.7); }
+            100% { box-shadow: 0 0 3px rgba(220, 53, 69, 0.3); }
+        }
+
+
+        /* NEW: Center the single calendar in monthly view */
+        #monthly-calendar-container .month-container {
+            /* MODIFIED: Increased max-width */
+            max-width: 800px; 
+            width: 100%;
+        }
+
+
+        /* NEW: Styles for Swap View */
+        #compare-view .controls-container { justify-content: space-around; }
+        #compare-view h2 { text-align: center; color: var(--primary-color); margin-top: 0px; margin-bottom: 10px; font-size: 1.3em; }
+        
+        /* MODIFIED: Changed layout for Compare View (Desktop-First 2x3) */
+        /* MODIFIED: Increased selector specificity to override cache */
+        div#compare-view.view div.year-grid#compare-grid {
+            /* --- FIX: Added display: grid; and gap: --- */
+            display: grid;
+            gap: 20px; 
+            /* MODIFIED: Default: 2 columns (2x3 layout) as requested */
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        /* On tablets (screens <= 1024px), drop to 2 columns */
+        /* @media (max-width: 1024px) { ... } // This breakpoint is no longer needed */
+         
+        /* On phones (screens <= 640px), drop to 1 column */
+        @media (max-width: 640px) {
+            /* MODIFIED: Increased selector specificity to override cache */
+            div#compare-view.view div.year-grid#compare-grid {
+                display: grid; /* Ensure display: grid is set here too */
+                gap: 20px;
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+        /* MODIFIED: Removed Grid layout. Tables will now stack vertically by default. */
+        /*
+        #swap-view .swap-table-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }
+        */
     </style>
 </head>
 <body>
@@ -99,6 +305,8 @@
             <div class="view-nav">
                 <button id="nav-yearly" class="active">ภาพรวมรายปี</button>
                 <button id="nav-monthly">ภาพรวมรายเดือน</button>
+                <!-- MODIFIED: Fixed the button ID to match the view ID -->
+                <button id="nav-compare">เทียบเวร (รายเดือน)</button> 
                 <button id="nav-weekly">ภาพรวมรายสัปดาห์</button>
                 <button id="nav-summary">สรุปภาพรวม</button>
             </div>
@@ -109,12 +317,52 @@
             </div>
             <div id="monthly-view" class="view">
                  <div class="controls-container">
-                    <label for="monthly-selector">เลือกเดือน:</label>
-                    <select id="monthly-selector"></select>
-                    <button id="reset-swaps-button" class="action-button">ล้างการสลับเวร (เดือนนี้)</button>
+                     <label for="monthly-selector">เลือกเดือน:</label>
+                     <select id="monthly-selector"></select>
+                     
+                     <!-- REMOVED: Pharmacist Selector -->
+                     
+                     <!-- REMOVED: Reset Swaps Button (Moved to compare-view) -->
                  </div>
-                 <div class="table-responsive"><table><thead id="monthly-table-header"></thead><tbody id="monthly-table-body"></tbody></table></div>
+                 <!-- MODIFIED: Changed from table to calendar view -->
+                 <div id="monthly-calendar-container" style="display: flex; justify-content: center; padding: 0 20px;">
+                    <!-- Single calendar showing ALL duties will be generated here -->
+                 </div>
             </div>
+
+            <!-- MODIFIED: Renamed view to compare-view -->
+            <div id="compare-view" class="view">
+                <div class="controls-container">
+                    <!-- MODIFIED: Only one month selector needed -->
+                    <div>
+                        <label for="compare-month-selector">เลือกเดือนเพื่อเทียบเวร:</label>
+                        <select id="compare-month-selector"></select>
+                    </div>
+
+                    <!-- NEW: Swap Mode Selector (Moved from monthly-view) -->
+                    <div class="swap-mode-controls">
+                       <label>
+                           <input type="radio" name="swap-mode" value="week" checked>
+                           สลับรายสัปดาห์
+                       </label>
+                       <label>
+                           <input type="radio" name="swap-mode" value="day">
+                           สลับรายวัน
+                       </label>
+                    </div>
+
+                    <!-- NEW: Moved Reset Swaps Button here -->
+                    <button id="reset-swaps-button" class="action-button">ล้างการสลับเวร (เดือนนี้)</button>
+                </div>
+                
+                <!-- MODIFIED: Changed to a year-grid layout -->
+                <div class="year-grid" id="compare-grid">
+                    <!-- Calendars will be generated here by JS -->
+                </div>
+
+            </div>
+            <!-- END: Compare View -->
+
             <div id="weekly-view" class="view">
                  <div class="controls-container"><label for="weekly-selector">เลือกสัปดาห์:</label><select id="weekly-selector"></select></div>
                  <div class="table-responsive"><table id="weekly-table"></table></div>
@@ -149,6 +397,18 @@
         </div>
     </div>
 
+    <!-- Custom Alert/Confirm Modal -->
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h2 id="custom-modal-title" style="margin-bottom: 20px;"></h2>
+            <p id="custom-modal-message" style="font-size: 1.1em; margin-bottom: 25px;"></p>
+            <div id="custom-modal-buttons" style="display: flex; justify-content: center; gap: 15px;">
+                <button id="custom-modal-confirm" class="action-button-modal" style="background-color: var(--success-color);"></button>
+                <button id="custom-modal-cancel" class="action-button" style="background-color: var(--danger-color);"></button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- GLOBAL STATE ---
         const THAI_MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
@@ -161,6 +421,7 @@
         let manualOverrides = {};
         let firstSwapSelection = null;
         let fullYearSchedule = {};
+        let customModalConfirmCallback = null;
 
         // --- DOM ELEMENTS ---
         const yearSelector = document.getElementById('year-selector');
@@ -177,11 +438,66 @@
         const resetSwapsButton = document.getElementById('reset-swaps-button');
 
         // --- CORE LOGIC ---
-        function getWeekNumber(d) { 
-            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+
+        // --- FIX: Moved isSameDutyCategory to global scope ---
+        const isSameDutyCategory = (d1, d2) => {
+            if (!d1 || !d2) return false;
+            const category1 = d1.includes('Dispense') ? 'Dispense' : d1;
+            const category2 = d2.includes('Dispense') ? 'Dispense' : d2;
+            return category1 === category2;
+        };
+
+        /**
+         * NEW: Pre-calculates screener assignments to ensure Rule #1 (2 duties per person) is met.
+         * This runs *before* the main schedule generation.
+         */
+        // --- FIX: Restored the full, correct function definition ---
+        function preCalculateScreenerAssignments(year, screenerWeeksMap, pharmacistNames, screenerDuty) {
+            const screenerAssignments = new Map(); // mondayString -> pharmacistName
+            const screenerCounts = {};
+            pharmacistNames.forEach(name => screenerCounts[name] = 0);
+            
+            // Sort screener weeks chronologically
+            const screenerWeeks = Array.from(screenerWeeksMap.keys()).sort();
+
+            let lastScreenerAssigned = null; // To avoid back-to-back months if possible
+
+            screenerWeeks.forEach(mondayString => {
+                let bestPerson = null;
+                let minCount = Infinity;
+
+                // Find all people with the minimum screener count
+                pharmacistNames.forEach(name => {
+                    const count = screenerCounts[name];
+                    if (count < minCount) {
+                        minCount = count;
+                    }
+                });
+                
+                // Get all candidates who have this minimum count
+                const candidates = pharmacistNames.filter(name => screenerCounts[name] === minCount);
+
+                if (candidates.length === 1) {
+                    // Only one person has the minimum count, must assign to them
+                    bestPerson = candidates[0];
+                } else {
+                    // Multiple candidates, try to avoid assigning the same person as last month
+                    const nonRepeatingCandidates = candidates.filter(name => name !== lastScreenerAssigned);
+                    if (nonRepeatingCandidates.length > 0) {
+                        bestPerson = nonRepeatingCandidates[0]; // Pick the first available non-repeating
+                    } else {
+                        bestPerson = candidates[0]; // All candidates would repeat, just pick the first
+                    }
+                }
+
+                // Assign the duty
+                screenerAssignments.set(mondayString, bestPerson);
+                screenerCounts[bestPerson]++;
+                lastScreenerAssigned = bestPerson;
+            });
+            
+            // console.log("Final Screener Counts:", screenerCounts); // Debug
+            return screenerAssignments;
         }
 
         function generateFullYearSchedule(year) {
@@ -189,41 +505,60 @@
             if (duties.length === 0 || pharmacistNames.length === 0) return;
 
             const getPermutations = (arr) => {
-                if (arr.length <= 1) return [arr];
-                const perms = [];
-                for (let i = 0; i < arr.length; i++) {
-                    const current = arr[i];
-                    const remaining = arr.slice(0, i).concat(arr.slice(i + 1));
-                    getPermutations(remaining).forEach(p => perms.push([current, ...p]));
+                // ... (This function relies on the closing brace of preCalculateScreenerAssignments,
+                // but since that function was broken, the error occurred before this point.
+                // Now that the function above is fixed, we need to add the *rest* of the JS code.)
+                // --- START: Restoring missing JS code ---
+                if (arr.length === 0) return [[]];
+                const firstElement = arr[0];
+                const rest = arr.slice(1);
+                const permsWithoutFirst = getPermutations(rest);
+                const allPermutations = [];
+                permsWithoutFirst.forEach(perm => {
+                    for (let i = 0; i <= perm.length; i++) {
+                        const permWithFirst = [...perm.slice(0, i), firstElement, ...perm.slice(i)];
+                        allPermutations.push(permWithFirst);
+                    }
+                });
+                // Simple factorial check to prevent crash on large N (e.g., N > 7)
+                if (allPermutations.length > 5040) { // 7! = 5040
+                     // console.warn(`Permutation count too high (${arr.length}!). Using sliced array.`);
+                     return allPermutations.slice(0, 5040); // Return a subset
                 }
-                return perms;
+                return allPermutations;
             };
 
             let allMondays = [];
             let date = new Date(year, 0, 1);
             if (date.getDay() !== 1) { date.setDate(date.getDate() + (8 - date.getDay()) % 7); }
-            while(date.getFullYear() === year) {
+             if (date.getFullYear() < year) { date.setDate(date.getDate() + 7); } 
+            while (date.getFullYear() === year) {
                 allMondays.push(new Date(date));
                 date.setDate(date.getDate() + 7);
             }
 
             const firstWeekMondays = new Map();
             const screenerDuty = duties.find(d => d.toLowerCase().includes('screen')) || duties[0];
-            const screenerAssignments = Array.from({length: 12}, (_, i) => pharmacistNames[i % pharmacistCount]);
+            
+            // Find screener weeks
             for (let month = 0; month < 12; month++) {
                 let firstThursday = new Date(year, month, 1);
-                while(firstThursday.getDay() !== 4) { firstThursday.setDate(firstThursday.getDate() + 1); }
+                while (firstThursday.getDay() !== 4) { firstThursday.setDate(firstThursday.getDate() + 1); }
                 let mondayOfFirstWeek = new Date(firstThursday);
                 mondayOfFirstWeek.setDate(mondayOfFirstWeek.getDate() - 3);
                 firstWeekMondays.set(mondayOfFirstWeek.toISOString().split('T')[0], month);
             }
+
+            // --- NEW: Run Rule #1 (Screener) First ---
+            const screenerAssignments = preCalculateScreenerAssignments(year, firstWeekMondays, pharmacistNames, screenerDuty);
             
-            let lastWeekAssignments = null;
-            let workload = {};
+            let lastWeekAssignments = null; // Map { pharmacistName: duty }
+            let workload = {}; // Map { pharmacistName: { duty: count } }
             pharmacistNames.forEach(name => {
                 workload[name] = {};
                 duties.forEach(duty => workload[name][duty] = 0);
             });
+            // REMOVED: screenerCounts - no longer needed here, handled in preCalculateScreenerAssignments
 
             const assignWeek = (monday, dutyMap) => {
                 for (let i = 0; i < 5; i++) {
@@ -232,94 +567,144 @@
                     if (d.getFullYear() === year) {
                         const dateString = `${year}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                         fullYearSchedule[dateString] = {};
-                        for(const phName in dutyMap) {
+                        for (const phName in dutyMap) {
                             fullYearSchedule[dateString][dutyMap[phName]] = phName;
                         }
                     }
                 }
             };
             
+            // REMOVED: isSameDutyCategory definition moved to global scope
+
+            // Calculate cost (Rules #2 and #3 ONLY)
+             const calculateCost = (permutationMap, people, lastAssignments, currentWorkload) => {
+                // Rule #2: Repetition cost
+                let repetitionCost = 0;
+                if (lastAssignments) {
+                    people.forEach(p => {
+                        // FIX: Ensure permutationMap[p] exists before calling isSameDutyCategory
+                        if (permutationMap[p] && isSameDutyCategory(lastAssignments[p], permutationMap[p])) {
+                            // MODIFIED: Rule #2 has a high, but not infinite, cost.
+                            repetitionCost += 100000; 
+                        }
+                    });
+                }
+                
+                // Rule #3: Imbalance cost
+                // This score is now the *only* thing that matters if Rule #2 is passed.
+                const tempWorkload = JSON.parse(JSON.stringify(currentWorkload));
+                people.forEach(p => {
+                    if (permutationMap[p]) { // Ensure the person has a duty in this map
+                         tempWorkload[p][permutationMap[p]]++;
+                    }
+                });
+                
+                let imbalanceScore = 0; 
+                const dutyArrays = {};
+                duties.forEach(d => dutyArrays[d] = []);
+                Object.keys(tempWorkload).forEach(p => {
+                    for (const d in tempWorkload[p]) {
+                        dutyArrays[d].push(tempWorkload[p][d]);
+                    }
+                });
+                for (const duty in dutyArrays) {
+                    const counts = dutyArrays[duty];
+                    if (counts.length > 1) {
+                        const max = Math.max(...counts);
+                        const min = Math.min(...counts);
+                        imbalanceScore += (max - min); 
+                    }
+                }
+                
+                // REMOVED: All screenerCost logic. Rule #1 is already handled.
+                
+                // MODIFIED: The only cost is imbalance, as repetition is now a filter (Infinity).
+                return repetitionCost + imbalanceScore;
+            };
+            
             allMondays.forEach(monday => {
                 const mondayString = monday.toISOString().split('T')[0];
-                let currentWeekAssignments = {};
+                const isScreenerWeek = screenerAssignments.has(mondayString); // MODIFIED
+                
+                let fixedAssignments = {};
+                let peopleForPermutation = pharmacistNames;
+                let tasksForPermutation = duties;
 
-                const isSameDutyCategory = (d1, d2) => {
-                    if(!d1 || !d2) return false;
-                    if (d1.includes('Dispense') && d2.includes('Dispense')) return true;
-                    return d1 === d2;
-                };
+                if (isScreenerWeek) {
+                    // --- This is a Screener Week ---
+                    // Rule #1: Get the pre-calculated assignment
+                    const designatedScreener = screenerAssignments.get(mondayString);
+                    fixedAssignments[designatedScreener] = screenerDuty;
 
-                const getBestPermutation = (people, tasks, lastAssignments, currentWorkload) => {
-                    const taskPerms = getPermutations(tasks);
-                    let bestPermutation = taskPerms[0] || [];
-                    let bestCost = Infinity;
+                    // Filter people and tasks for Rule #2 and #3
+                    peopleForPermutation = pharmacistNames.filter(p => p !== designatedScreener);
+                    tasksForPermutation = duties.filter(d => d !== screenerDuty);
+                }
+                // --- End Screener Week Logic ---
 
-                    taskPerms.forEach(perm => {
-                        let repetitions = 0;
-                        if (lastAssignments) {
-                            people.forEach((p, i) => {
-                                if (isSameDutyCategory(lastAssignments[p], perm[i])) {
-                                    repetitions++;
-                                }
-                            });
-                        }
+                const taskPerms = getPermutations(tasksForPermutation); 
+                let bestPermutation = null;
+                let bestCost = Infinity;
 
-                        const tempWorkload = JSON.parse(JSON.stringify(currentWorkload));
-                        people.forEach((p, i) => tempWorkload[p][perm[i]]++);
+                // Try all permutations for the *remaining* people/tasks
+                taskPerms.forEach(perm => {
+                    const permutationMap = {};
+                    peopleForPermutation.forEach((p, i) => permutationMap[p] = perm[i]); // Map remaining people
+                    
+                    // Create a *full* map (including fixed screener) to check for repetitions
+                    const fullPermutationMap = { ...fixedAssignments, ...permutationMap };
+
+                    // Pass all info to the cost function
+                    // We check cost against *all* people, but only permute the *remaining* people
+                    const cost = calculateCost(fullPermutationMap, pharmacistNames, lastWeekAssignments, workload);
+
+                    if (cost < bestCost) { // Will only select schedules where cost is NOT Infinity
+                        bestCost = cost;
+                        bestPermutation = perm;
+                    }
+                });
+                
+                // Failsafe: if bestPermutation is STILL null (e.g., all returned Infinity)
+                if (bestPermutation === null) {
+                    // This happens if *every* possible permutation resulted in a repetition (cost=Infinity)
+                    // We must re-run but ignore the repetition cost (Pass 2: Relaxed Mode)
+                    // console.error(`Could not find a valid schedule for week ${mondayString}. Relaxing repetition rule...`);
+                    bestCost = Infinity;
+                     taskPerms.forEach(perm => {
+                        const permutationMap = {};
+                        peopleForPermutation.forEach((p, i) => permutationMap[p] = perm[i]);
+                        const fullPermutationMap = { ...fixedAssignments, ...permutationMap };
                         
-                        let imbalanceScore = 0;
-                        const dutyArrays = {};
-                        duties.forEach(d => dutyArrays[d] = []);
-                        Object.keys(tempWorkload).forEach(p => {
-                           for(const d in tempWorkload[p]){
-                               dutyArrays[d].push(tempWorkload[p][d]);
-                           }
-                        });
-                         for (const duty in dutyArrays) {
-                            const counts = dutyArrays[duty];
-                            if (counts.length > 1) {
-                                const max = Math.max(...counts);
-                                const min = Math.min(...counts);
-                                imbalanceScore += (max - min);
-                            }
-                        }
-                        
-                        const cost = (repetitions * 1000) + imbalanceScore;
+                        // Recalculate, but ignore repetition cost (pass null for lastAssignments)
+                        // This time, we only care about imbalance (Rule #3)
+                        const cost = calculateCost(fullPermutationMap, pharmacistNames, null, workload); 
                         if (cost < bestCost) {
                             bestCost = cost;
                             bestPermutation = perm;
                         }
                     });
-                    return bestPermutation;
-                };
-                
-                if (firstWeekMondays.has(mondayString) && pharmacistCount > 0) {
-                    const month = firstWeekMondays.get(mondayString);
-                    const designatedScreener = screenerAssignments[month];
-                    const otherPharmacists = pharmacistNames.filter(p => p !== designatedScreener);
-                    const otherDuties = duties.filter(d => d !== screenerDuty);
-                    
-                    let tempLastAssignments = null;
-                    if(lastWeekAssignments){
-                        tempLastAssignments = { ...lastWeekAssignments };
-                        delete tempLastAssignments[designatedScreener];
-                    }
-                    
-                    const bestOtherPermutation = getBestPermutation(otherPharmacists, otherDuties, tempLastAssignments, workload);
-                    
-                    currentWeekAssignments[designatedScreener] = screenerDuty;
-                    otherPharmacists.forEach((p, i) => currentWeekAssignments[p] = bestOtherPermutation[i]);
-
-                } else {
-                    const bestPermutation = getBestPermutation(pharmacistNames, duties, lastWeekAssignments, workload);
-                    pharmacistNames.forEach((p, i) => currentWeekAssignments[p] = bestPermutation[i]);
+                     if (bestPermutation === null && taskPerms.length > 0) {
+                        bestPermutation = taskPerms[0] || []; // Absolute failsafe
+                     }
                 }
-                
+
+                // Construct the final assignment map for the week
+                const currentWeekAssignments = { ...fixedAssignments }; // Start with screener
+                if(bestPermutation){
+                     peopleForPermutation.forEach((p, i) => currentWeekAssignments[p] = bestPermutation[i]); // Add the rest
+                }
+
                 assignWeek(monday, currentWeekAssignments);
                 lastWeekAssignments = currentWeekAssignments;
+                
+                // Update workload (screener is now included here)
                 for (const phName in currentWeekAssignments) {
-                    workload[phName][currentWeekAssignments[phName]]++;
+                    const assignedDuty = currentWeekAssignments[phName];
+                    if (workload[phName] && assignedDuty) {
+                         workload[phName][assignedDuty]++;
+                    }
                 }
+                // REMOVED: screenerCounts update, no longer needed.
             });
         }
 
@@ -342,9 +727,21 @@
         // --- VIEW & UI LOGIC ---
         function switchView(viewId) { 
             views.forEach(view => view.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
             navButtons.forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`nav-${viewId.split('-')[0]}`).classList.add('active');
+            
+            const viewToShow = document.getElementById(viewId);
+            const buttonToActivate = document.getElementById(`nav-${viewId.split('-')[0]}`);
+
+            // MODIFIED: Added checks to prevent TypeError if element is not found
+            if (viewToShow) {
+                viewToShow.classList.add('active');
+            }
+            if (buttonToActivate) {
+                buttonToActivate.classList.add('active');
+            } else if (viewId === 'compare-view') { 
+                // Fallback check specifically for the renamed 'compare' tab
+                document.getElementById('nav-compare')?.classList.add('active');
+            }
         }
         function getRoleClass(dutyKey) {
             const dutyIndex = duties.indexOf(dutyKey);
@@ -387,42 +784,181 @@
                 grid.appendChild(monthContainer);
             });
         }
+        
+        // --- NEW: Refactored monthly view logic ---
+        // REMOVED: generateMonthlyTable is no longer needed
+        
+            
+        // MODIFIED: renderMonthlyView now generates a calendar showing all duties
         function renderMonthlyView() { 
             const year = parseInt(yearSelector.value) - 543;
             const selectedMonth = parseInt(document.getElementById('monthly-selector').value);
-            const header = document.getElementById('monthly-table-header');
-            const body = document.getElementById('monthly-table-body');
-            header.innerHTML = ''; body.innerHTML = '';
-            
-            let headerRow = '<tr><th>วันที่</th><th>วัน</th>';
-            duties.forEach(duty => headerRow += `<th>${duty}</th>`);
-            headerRow += '</tr>';
-            header.innerHTML = headerRow;
+            const container = document.getElementById('monthly-calendar-container');
+            container.innerHTML = ''; // Clear old grid
 
+            if (pharmacistNames.length === 0) return;
+
+            // --- Start: Calendar generation logic (similar to old compare view) ---
+            const monthContainer = document.createElement('div');
+            monthContainer.className = 'month-container';
+            // Use Month name as title
+            monthContainer.innerHTML = `<div class="month-header">${THAI_MONTHS[selectedMonth]}</div>`;
+            
+            const calendarGrid = document.createElement('div');
+            calendarGrid.className = 'calendar-grid';
+            
+            THAI_DAYS_SHORT.forEach(day => calendarGrid.innerHTML += `<div class="day-header">${day}</div>`);
+            
+            const firstDay = new Date(year, selectedMonth, 1);
+            for (let i = 0; i < firstDay.getDay(); i++) { 
+                calendarGrid.innerHTML += `<div class="day-cell empty"></div>`; 
+            }
+            
             const daysInMonth = new Date(year, selectedMonth + 1, 0).getDate();
+            
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, selectedMonth, day);
                 const dateString = `${year}-${String(selectedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const dayOfWeek = date.getDay();
-                const row = document.createElement('tr');
-                if (dayOfWeek === 0 || dayOfWeek === 6) row.className = 'weekend-row';
-                row.innerHTML = `<td>${day}</td><td>${THAI_DAYS_SHORT[dayOfWeek]}</td>`;
                 const dutiesMap = getDutiesForDate(date);
-                duties.forEach(duty => {
-                    const cell = document.createElement('td');
-                    if (dutiesMap && dutiesMap[duty]) {
-                        cell.textContent = dutiesMap[duty];
-                        cell.className = getRoleClass(duty);
+                
+                // Get duties from 7 days ago to check for repeats
+                const prevWeekDate = new Date(date);
+                prevWeekDate.setDate(date.getDate() - 7);
+                const prevDutiesMap = getDutiesForDate(prevWeekDate);
+
+                let cellContent = `<div class="day-number">${day}</div>`;
+                
+                if (dutiesMap && dayOfWeek !== 0 && dayOfWeek !== 6) {
+                    cellContent += `<div class="duty-list">`;
+                    // Loop through ALL duties defined in settings
+                    duties.forEach(duty => { 
+                        const currentPharmacist = dutiesMap[duty];
+                        if (currentPharmacist) {
+                            let isRepeat = false;
+                            // Check for repeats from last week
+                            if (prevDutiesMap) {
+                                for (const prevDuty in prevDutiesMap) {
+                                    if (prevDutiesMap[prevDuty] === currentPharmacist && isSameDutyCategory(duty, prevDuty)) {
+                                        isRepeat = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            const repeatClass = isRepeat ? 'duty-repeat-warning' : '';
+                            const roleClass = getRoleClass(duty);
+                            
+                            // Create duty item (NOT swappable in this view)
+                            cellContent += `<div class="duty-item ${roleClass} ${repeatClass}">`; 
+                            cellContent += `${duty}: ${currentPharmacist}`;
+                            cellContent += `</div>`;
+                        }
+                    });
+                    cellContent += `</div>`;
+                }
+
+                const cell = document.createElement('div');
+                cell.className = 'day-cell';
+                 if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    cell.classList.add('weekend-row'); 
+                }
+                cell.innerHTML = cellContent;
+                calendarGrid.appendChild(cell);
+            }
+            
+            monthContainer.appendChild(calendarGrid);
+            container.appendChild(monthContainer);
+            // --- End: Calendar generation logic ---
+        }
+        
+        // REMOVED: The generateMonthlyCalendar function is no longer needed.
+        
+
+        // MODIFIED: Function to render the new Compare View
+        function renderCompareView() {
+            const year = parseInt(yearSelector.value) - 543;
+            const selectedMonth = parseInt(document.getElementById('compare-month-selector').value);
+            const grid = document.getElementById('compare-grid');
+            grid.innerHTML = ''; // Clear old grid
+
+            if (pharmacistNames.length === 0) return;
+
+            // Loop for each pharmacist
+            pharmacistNames.forEach((phName, phIndex) => {
+                const monthContainer = document.createElement('div');
+                monthContainer.className = 'month-container';
+                // Add Pharmacist name as title
+                monthContainer.innerHTML = `<h2>${phName}</h2><div class="month-header">${THAI_MONTHS[selectedMonth]}</div>`;
+                
+                const calendarGrid = document.createElement('div');
+                calendarGrid.className = 'calendar-grid';
+                
+                THAI_DAYS_SHORT.forEach(day => calendarGrid.innerHTML += `<div class="day-header">${day}</div>`);
+                
+                const firstDay = new Date(year, selectedMonth, 1);
+                for (let i = 0; i < firstDay.getDay(); i++) { 
+                    calendarGrid.innerHTML += `<div class="day-cell empty"></div>`; 
+                }
+                
+                const daysInMonth = new Date(year, selectedMonth + 1, 0).getDate();
+                
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, selectedMonth, day);
+                    const dateString = `${year}-${String(selectedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const dutiesMap = getDutiesForDate(date);
+                    
+                    let phDuty = null;
+                    if (dutiesMap) {
+                        for (const duty in dutiesMap) {
+                            if (dutiesMap[duty] === phName) {
+                                phDuty = duty;
+                                break;
+                            }
+                        }
+                    }
+
+                    const cell = document.createElement('div');
+                    cell.className = 'day-cell';
+                    let cellContent = `<div class="day-number">${day}</div>`;
+
+                    if (phDuty) {
                         cell.classList.add('swappable');
                         cell.dataset.date = dateString;
-                        cell.dataset.duty = duty;
+                        cell.dataset.duty = phDuty;
+                        cell.dataset.pharmacist = phName; // Store pharmacist name in dataset
+                        cellContent += `<div class="duty-marker ${getRoleClass(phDuty)}">${phDuty.substring(0,3)}</div>`;
+                        
+                        // Check for repeats (from monthly view logic)
+                        const prevWeekDate = new Date(date);
+                        prevWeekDate.setDate(date.getDate() - 7);
+                        const prevDutiesMap = getDutiesForDate(prevWeekDate);
+                        if (prevDutiesMap) {
+                            for (const prevDuty in prevDutiesMap) {
+                                // --- FIX: Call isSameDutyCategory correctly ---
+                                if (prevDutiesMap[prevDuty] === phName && isSameDutyCategory(phDuty, prevDuty)) {
+                                    cell.classList.add('duty-repeat-warning');
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    cell.innerHTML = cellContent;
+                    
+                    // Add listener only if it's a valid duty cell
+                    if (phDuty) {
                         cell.addEventListener('click', handleSwapClick);
-                    } else { cell.textContent = '-'; }
-                    row.appendChild(cell);
-                });
-                body.appendChild(row);
-            }
+                    }
+                    calendarGrid.appendChild(cell);
+                }
+                
+                monthContainer.appendChild(calendarGrid);
+                grid.appendChild(monthContainer);
+            });
         }
+
+
         function renderWeeklyView() {
             const year = parseInt(yearSelector.value) - 543;
             const selectedWeekIndex = parseInt(document.getElementById('weekly-selector').value);
@@ -430,10 +966,23 @@
             table.innerHTML = '';
             
             let headerHtml = '<thead><tr><th>หน้าที่</th>';
-            for (let i = 0; i < 7; i++) {
-                const firstDayOfYear = new Date(year, 0, 1);
-                const date = new Date(year, 0, (selectedWeekIndex * 7) + i - firstDayOfYear.getDay() + 1);
-                headerHtml += `<th>${THAI_DAYS_FULL[date.getDay()]}<br><small>${date.getDate()}/${date.getMonth()+1}</small></th>`;
+             // Correctly calculate the start date of the selected week's Monday
+            let mondaysInYear = [];
+            let d = new Date(year, 0, 1);
+            if (d.getDay() !== 1) { d.setDate(d.getDate() + (8 - d.getDay()) % 7); }
+             if (d.getFullYear() < year) { d.setDate(d.getDate() + 7); } // Ensure we start within the correct year
+            while(d.getFullYear() === year) {
+                mondaysInYear.push(new Date(d));
+                d.setDate(d.getDate() + 7);
+            }
+            const mondayOfSelectedWeek = mondaysInYear[selectedWeekIndex];
+
+            if(mondayOfSelectedWeek){
+                for (let i = 0; i < 7; i++) {
+                    const date = new Date(mondayOfSelectedWeek);
+                    date.setDate(date.getDate() + i);
+                    headerHtml += `<th>${THAI_DAYS_FULL[date.getDay()]}<br><small>${date.getDate()}/${date.getMonth()+1}</small></th>`;
+                }
             }
             headerHtml += '</tr></thead>';
             table.innerHTML = headerHtml;
@@ -442,15 +991,17 @@
             duties.forEach(duty => {
                 bodyHtml += `<tr><td class="duty-label ${getRoleClass(duty)}">${duty}</td>`;
                 for (let i = 0; i < 7; i++) {
-                    const firstDayOfYear = new Date(year, 0, 1);
-                    const date = new Date(year, 0, (selectedWeekIndex * 7) + i - firstDayOfYear.getDay() + 1);
-                    const dutiesForDay = getDutiesForDate(date);
-                    let phName = '-';
-                    let cellClass = '';
-                    if (dutiesForDay && dutiesForDay[duty]) {
-                        phName = dutiesForDay[duty];
-                        cellClass = getRoleClass(duty);
-                    }
+                     let phName = '-';
+                     let cellClass = '';
+                     if(mondayOfSelectedWeek){
+                         const date = new Date(mondayOfSelectedWeek);
+                         date.setDate(date.getDate() + i);
+                         const dutiesForDay = getDutiesForDate(date);
+                         if (dutiesForDay && dutiesForDay[duty]) {
+                             phName = dutiesForDay[duty];
+                             cellClass = getRoleClass(duty);
+                         }
+                     }
                     bodyHtml += `<td class="${cellClass}">${phName}</td>`;
                 }
                 bodyHtml += '</tr>';
@@ -525,57 +1076,208 @@
             const currentSelectedIndex = yearlyPhSelector ? yearlyPhSelector.value : 0;
             if (yearlyPhSelector) yearlyPhSelector.innerHTML = '';
             
+            // REMOVED: monthly-pharmacist-selector logic
+
             pharmacistNames.forEach((name, index) => {
                 const option = document.createElement('option');
                 option.value = index;
                 option.textContent = name || `ภก. ${index + 1}`;
                 if(yearlyPhSelector) yearlyPhSelector.appendChild(option);
+
+                // REMOVED: monthly-pharmacist-selector logic
             });
             if(yearlyPhSelector) yearlyPhSelector.value = currentSelectedIndex;
+            // REMOVED: monthly-pharmacist-selector logic
             
             renderLegend();
             renderYearlyView();
-            renderMonthlyView();
+            renderMonthlyView(); // MODIFIED: This now renders the table
+            renderCompareView(); 
             renderWeeklyView();
             renderSummaryView();
         }
         
         // --- SWAP LOGIC ---
+
+        // NEW: Helper function to get the Monday of a given date
+        function getMonday(d) {
+            const date = new Date(d);
+            const day = date.getDay(); // Sun = 0, Mon = 1, ... Sat = 6
+            const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+            return new Date(date.setDate(diff));
+        }
+
+        // NEW: Helper function to clear all swap highlights
+        function clearAllHighlights() {
+            document.querySelectorAll('.swap-selected').forEach(el => el.classList.remove('swap-selected'));
+            document.querySelectorAll('.week-selected').forEach(el => el.classList.remove('week-selected'));
+        }
+
+        // NEW: Helper function to highlight a full week in compare-view
+        function highlightWeek(clickedCell, weekMonday) {
+            // Find the grid this cell belongs to
+            const grid = clickedCell.closest('.calendar-grid');
+            if (!grid) return;
+
+            for (let i = 0; i < 5; i++) { // Loop Mon-Fri
+                const dayToHighlight = new Date(weekMonday);
+                dayToHighlight.setDate(dayToHighlight.getDate() + i);
+                
+                const dateString = `${dayToHighlight.getFullYear()}-${String(dayToHighlight.getMonth() + 1).padStart(2, '0')}-${String(dayToHighlight.getDate()).padStart(2, '0')}`;
+                
+                // Find the cell *in this grid* for that date
+                const cellToHighlight = grid.querySelector(`.day-cell[data-date="${dateString}"]`);
+                if (cellToHighlight) {
+                    cellToHighlight.classList.add('week-selected');
+                }
+            }
+        }
+
+
         function handleSwapClick(event) {
-            const cell = event.currentTarget;
+            const cell = event.currentTarget; // This is a <td> or a <div>
             const { date, duty } = cell.dataset;
-            if (!firstSwapSelection) {
-                document.querySelectorAll('.swap-selected').forEach(el => el.classList.remove('swap-selected'));
-                cell.classList.add('swap-selected');
-                firstSwapSelection = { cell, date, duty, pharmacist: cell.textContent };
-            } else {
-                if (firstSwapSelection.cell === cell) {
-                    cell.classList.remove('swap-selected');
-                    firstSwapSelection = null;
-                } else if (firstSwapSelection.date === date) {
-                    const secondSelection = { cell, date, duty, pharmacist: cell.textContent };
-                    if (!manualOverrides[date]) manualOverrides[date] = {};
-                    manualOverrides[date][firstSwapSelection.duty] = secondSelection.pharmacist;
-                    manualOverrides[date][secondSelection.duty] = firstSwapSelection.pharmacist;
-                    firstSwapSelection.cell.classList.add('swapped-animation');
-                    secondSelection.cell.classList.add('swapped-animation');
-                    setTimeout(() => {
-                        firstSwapSelection = null;
-                        updateAllViews(); 
-                        generateShareLink(true);
-                    }, 500);
-                } else {
-                    document.querySelectorAll('.swap-selected').forEach(el => el.classList.remove('swap-selected'));
+            const pharmacist = cell.dataset.pharmacist || cell.textContent;
+
+            if (!pharmacist || !duty) return; // Not a valid swappable cell
+
+            // Get the current swap mode
+            const swapMode = document.querySelector('input[name="swap-mode"]:checked')?.value || 'week';
+
+            if (swapMode === 'day') {
+                // --- DAILY SWAP LOGIC (Original) ---
+                if (!firstSwapSelection || firstSwapSelection.isWeekly) {
+                    // Start new daily selection
+                    clearAllHighlights(); // MODIFIED
                     cell.classList.add('swap-selected');
-                    firstSwapSelection = { cell, date, duty, pharmacist: cell.textContent };
+                    firstSwapSelection = { cell, date, duty, pharmacist, isWeekly: false };
+                } else {
+                    // This is the second click in daily mode
+                    if (firstSwapSelection.cell === cell) {
+                        clearAllHighlights(); // MODIFIED
+                        firstSwapSelection = null;
+                    } else if (firstSwapSelection.date === date) {
+                        // Valid daily swap (same date)
+                        const secondSelection = { cell, date, duty, pharmacist };
+                        if (!manualOverrides[date]) manualOverrides[date] = {};
+                        
+                        // Apply overrides based on *current* state (which includes previous overrides)
+                        const currentDutyMap = getDutiesForDate(new Date(date));
+                        const duty1 = firstSwapSelection.duty;
+                        const duty2 = secondSelection.duty;
+
+                        manualOverrides[date] = { ...currentDutyMap }; // Copy current state
+                        manualOverrides[date][duty1] = secondSelection.pharmacist;
+                        manualOverrides[date][duty2] = firstSwapSelection.pharmacist;
+                        
+                        firstSwapSelection.cell.classList.add('swapped-animation');
+                        secondSelection.cell.classList.add('swapped-animation');
+                        
+                        setTimeout(() => {
+                            firstSwapSelection = null;
+                            updateAllViews(); 
+                            generateShareLink(true);
+                        }, 500);
+                    } else {
+                        // New selection (different date)
+                        clearAllHighlights(); // MODIFIED
+                        cell.classList.add('swap-selected');
+                        firstSwapSelection = { cell, date, duty, pharmacist, isWeekly: false };
+                    }
+                }
+            } else {
+                // --- WEEKLY SWAP LOGIC (NEW) ---
+                const clickedDate = new Date(date);
+                clickedDate.setHours(12, 0, 0, 0); // Normalize date to avoid timezone issues
+                const weekMonday = getMonday(clickedDate);
+                const weekMondayString = weekMonday.toISOString().split('T')[0];
+                
+                if (!firstSwapSelection || !firstSwapSelection.isWeekly) {
+                    // Start new weekly selection
+                    clearAllHighlights(); // MODIFIED
+                    highlightWeek(cell, weekMonday); // NEW
+                    firstSwapSelection = { cell, weekMondayString, pharmacist, isWeekly: true };
+                } else {
+                    // This is the second click in weekly mode
+                    if (firstSwapSelection.pharmacist === pharmacist) { // Clicked same pharmacist (deselect)
+                        clearAllHighlights(); // MODIFIED
+                        firstSwapSelection = null;
+                    } else if (firstSwapSelection.weekMondayString === weekMondayString) {
+                        // Valid weekly swap (same week, different pharmacist)
+                        const secondSelection = { cell, pharmacist };
+                        const ph1 = firstSwapSelection.pharmacist;
+                        const ph2 = secondSelection.pharmacist;
+                        
+                        let swapOccurred = false;
+                        
+                        // Loop 5 times (Mon-Fri)
+                        for (let i = 0; i < 5; i++) {
+                            const dayToSwap = new Date(weekMonday);
+                            dayToSwap.setDate(dayToSwap.getDate() + i);
+                            
+                            // Use the same date format as getDutiesForDate
+                            const dateStringForLookup = `${dayToSwap.getFullYear()}-${String(dayToSwap.getMonth() + 1).padStart(2, '0')}-${String(dayToSwap.getDate()).padStart(2, '0')}`;
+                            
+                            // Get the *current* duties for that day (including previous overrides)
+                            const currentDutyMap = getDutiesForDate(dayToSwap);
+                            
+                            if (currentDutyMap) { // Only swap if it's a weekday
+                                let duty1 = null;
+                                let duty2 = null;
+                                
+                                // Find duties for ph1 and ph2
+                                for (const duty in currentDutyMap) {
+                                    if (currentDutyMap[duty] === ph1) duty1 = duty;
+                                    if (currentDutyMap[duty] === ph2) duty2 = duty;
+                                }
+
+                                if (duty1 || duty2) { // Only apply override if at least one person has a duty
+                                    // Start override from current state
+                                    if (!manualOverrides[dateStringForLookup]) {
+                                        manualOverrides[dateStringForLookup] = { ...currentDutyMap };
+                                    }
+                                    
+                                    if (duty1) manualOverrides[dateStringForLookup][duty1] = ph2;
+                                    if (duty2) manualOverrides[dateStringForLookup][duty2] = ph1;
+                                    swapOccurred = true;
+                                }
+                            }
+                        }
+
+                        if (swapOccurred) {
+                            // --- FIX: Animate the two cells that were *clicked*, not a complex query ---
+                            firstSwapSelection.cell.classList.add('swapped-animation');
+                            secondSelection.cell.classList.add('swapped-animation'); 
+                            
+                            clearAllHighlights(); // MODIFIED
+
+                            setTimeout(() => {
+                                firstSwapSelection = null;
+                                updateAllViews(); 
+                                generateShareLink(true);
+                            }, 500);
+                        } else {
+                            clearAllHighlights(); // MODIFIED
+                            firstSwapSelection = null;
+                        }
+
+                    } else {
+                        // New selection (different week)
+                        clearAllHighlights(); // MODIFIED
+                        highlightWeek(cell, weekMonday); // NEW
+                        firstSwapSelection = { cell, weekMondayString, pharmacist, isWeekly: true };
+                    }
                 }
             }
         }
         
         function handleResetSwaps() {
-            const selectedMonth = parseInt(document.getElementById('monthly-selector').value);
+            // MODIFIED: Read from compare-month-selector as the button has moved
+            const selectedMonth = parseInt(document.getElementById('compare-month-selector').value); 
             const year = parseInt(yearSelector.value) - 543;
-            if(confirm(`คุณต้องการล้างการสลับเวรทั้งหมดในเดือน${THAI_MONTHS[selectedMonth]}ใช่หรือไม่?`)) {
+            const message = `คุณต้องการล้างการสลับเวรทั้งหมดในเดือน${THAI_MONTHS[selectedMonth]}ใช่หรือไม่?`;
+            
+            customConfirm(message, 'ยืนยันการล้างข้อมูล', () => {
                 for(const dateStr in manualOverrides) {
                     const date = new Date(dateStr);
                     if(date.getFullYear() === year && date.getMonth() === selectedMonth) {
@@ -584,7 +1286,7 @@
                 }
                 updateAllViews();
                 generateShareLink(true);
-            }
+            });
         }
 
         // --- MODAL & SETTINGS LOGIC ---
@@ -637,17 +1339,28 @@
             const shareableLink = `${baseUrl}?${params.toString()}`;
             
             if (silent) {
-                 history.pushState(null, '', shareableLink);
+                 // MODIFIED: history.pushState() is blocked in this 'blob:' environment (SecurityError).
+                 // We will simply not update the URL silently.
+                 // The main "Save" button will still work as it forces a reload.
+                 // history.pushState(null, '', shareableLink); 
+                 return; // Do nothing, prevent the error
             } else {
-                navigator.clipboard.writeText(shareableLink).then(() => {
-                    alert('คัดลอกลิงก์สำเร็จแล้ว!\nคุณสามารถส่งลิงก์นี้ให้ทีมเพื่อดูตารางเวรได้เลย');
-                    settingsModal.style.display = 'none';
-                    if (window.location.href !== shareableLink) {
-                        window.location.href = shareableLink;
-                    }
-                }, () => {
-                    prompt("คัดลอกลิงก์นี้เพื่อแชร์ให้ทีม:", shareableLink);
-                });
+                // Use clipboard API first
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(shareableLink).then(() => {
+                        customAlert('คัดลอกลิงก์สำเร็จแล้ว!\nคุณสามารถส่งลิงก์นี้ให้ทีมเพื่อดูตารางเวรได้เลย', 'คัดลอกลิงก์');
+                        settingsModal.style.display = 'none';
+                        if (window.location.href !== shareableLink) {
+                            window.location.href = shareableLink;
+                        }
+                    }, () => {
+                         // Fallback for restricted environments
+                         customAlert('ไม่สามารถคัดลอกลิงก์อัตโนมัติได้ กรุณาคัดลอกลิงก์ด้านล่างนี้:\n' + shareableLink, 'คัดลอกลิงก์');
+                    });
+                } else {
+                     // Fallback for older browsers (less common now)
+                     customAlert('ไม่สามารถคัดลอกลิงก์อัตโนมัติได้ กรุณาคัดลอกลิงก์ด้านล่างนี้:\n' + shareableLink, 'คัดลอกลิงก์');
+                }
             }
         }
         
@@ -690,20 +1403,25 @@
             }
              yearSelector.value = currentCEYear + 543;
         }
-        function getWeekNumber(d) {
-            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-        }
-
+        
         function populateSelectors(year) {
             const monthlySelector = document.getElementById('monthly-selector');
             const weeklySelector = document.getElementById('weekly-selector');
-            monthlySelector.innerHTML = '';
-            THAI_MONTHS.forEach((m, i) => monthlySelector.innerHTML += `<option value="${i}">${m}</option>`);
+            // MODIFIED: Get swap selectors
+            const compareMonthSelector = document.getElementById('compare-month-selector'); // MODIFIED
+            
+            // REMOVED: monthly-pharmacist-selector logic
 
+            monthlySelector.innerHTML = '';
             weeklySelector.innerHTML = '';
+            compareMonthSelector.innerHTML = ''; // MODIFIED
+            // (monthlyPhSelector is populated in updateAllViews)
+
+            THAI_MONTHS.forEach((m, i) => {
+                monthlySelector.innerHTML += `<option value="${i}">${m}</option>`;
+                compareMonthSelector.innerHTML += `<option value="${i}">${m}</option>`; // MODIFIED
+            });
+
             let mondaysInYear = [];
             let d = new Date(year, 0, 1);
             if (d.getDay() !== 1) { d.setDate(d.getDate() + (8 - d.getDay()) % 7); }
@@ -720,22 +1438,27 @@
 
             const today = new Date();
             if (today.getFullYear() === year) {
-                monthlySelector.value = today.getMonth();
+                const currentMonth = today.getMonth();
+                
+                monthlySelector.value = currentMonth;
+                compareMonthSelector.value = currentMonth; // MODIFIED
+
                 let weekVal = -1;
                  for(let i=0; i < mondaysInYear.length; i++) {
-                    const monday = mondaysInYear[i];
-                    const nextMonday = new Date(monday);
-                    nextMonday.setDate(nextMonday.getDate() + 7);
-                    if (today >= monday && today < nextMonday) {
-                        weekVal = i;
-                        break;
-                    }
-                }
+                     const monday = mondaysInYear[i];
+                     const nextMonday = new Date(monday);
+                     nextMonday.setDate(nextMonday.getDate() + 7);
+                     if (today >= monday && today < nextMonday) {
+                         weekVal = i;
+                         break;
+                     }
+                 }
                 if (weekVal !== -1 && weeklySelector.options[weekVal]) {
                     weeklySelector.value = weekVal;
                 }
             } else {
                 monthlySelector.value = 0;
+                compareMonthSelector.value = 0; // MODIFIED
                 weeklySelector.value = 0;
             }
         }
@@ -744,6 +1467,9 @@
             const yearBE = parseInt(yearSelector.value);
             populateSelectors(yearBE - 543);
             updateAllViews();
+            
+            // Generate a new URL silent
+            generateShareLink(true);
         }
 
         function initialize() {
@@ -759,7 +1485,10 @@
             yearSelector.addEventListener('change', handleYearChange);
             document.getElementById('yearly-pharmacist-selector').addEventListener('change', renderYearlyView);
             document.getElementById('monthly-selector').addEventListener('change', renderMonthlyView);
+            // REMOVED: monthly-pharmacist-selector listener
             document.getElementById('weekly-selector').addEventListener('change', renderWeeklyView);
+            // MODIFIED: Add listeners for new swap selectors
+            document.getElementById('compare-month-selector').addEventListener('change', renderCompareView); // MODIFIED
             resetSwapsButton.addEventListener('click', handleResetSwaps);
             
             settingsButton.addEventListener('click', () => {
@@ -771,11 +1500,53 @@
             window.addEventListener('click', (event) => { if (event.target == settingsModal) settingsModal.style.display = 'none'; });
             personnelUpdateButton.addEventListener('click', handlePersonnelUpdate);
             generateLinkButton.addEventListener('click', () => generateShareLink(false));
+
+            // Custom Modal Listeners
+            const customModal = document.getElementById('custom-modal');
+            const customModalTitle = document.getElementById('custom-modal-title');
+            const customModalMessage = document.getElementById('custom-modal-message');
+            const customModalConfirm = document.getElementById('custom-modal-confirm');
+            const customModalCancel = document.getElementById('custom-modal-cancel');
+
+            customModalCancel.addEventListener('click', () => {
+                customModal.style.display = 'none';
+                customModalConfirmCallback = null;
+            });
+            customModalConfirm.addEventListener('click', () => {
+                customModal.style.display = 'none';
+                if (customModalConfirmCallback) {
+                    customModalConfirmCallback();
+                }
+                customModalConfirmCallback = null;
+            });
+        }
+
+        // --- CUSTOM MODAL HELPERS ---
+        function customAlert(message, title = 'แจ้งเตือน') {
+            document.getElementById('custom-modal-title').textContent = title;
+            // Allow newlines in alerts
+            document.getElementById('custom-modal-message').innerHTML = message.replace(/\n/g, '<br>');
+            document.getElementById('custom-modal-confirm').textContent = 'ตกลง';
+            document.getElementById('custom-modal-cancel').style.display = 'none';
+            document.getElementById('custom-modal').style.display = 'block';
+            customModalConfirmCallback = null;
+        }
+
+        function customConfirm(message, title = 'ยืนยัน', callback) {
+            document.getElementById('custom-modal-title').textContent = title;
+            document.getElementById('custom-modal-message').innerHTML = message.replace(/\n/g, '<br>');
+            document.getElementById('custom-modal-confirm').textContent = 'ยืนยัน';
+            document.getElementById('custom-modal-cancel').textContent = 'ยกเลิก';
+            document.getElementById('custom-modal-cancel').style.display = 'inline-block';
+            document.getElementById('custom-modal').style.display = 'block';
+            customModalConfirmCallback = callback;
         }
 
         window.addEventListener('load', initialize);
     </script>
 </body>
 </html>
+
+
 
 
