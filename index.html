@@ -756,6 +756,7 @@
             const selector = document.getElementById('yearly-pharmacist-selector');
             if (pharmacistNames.length === 0) return;
             const selectedPharmacistIndex = selector.value ? parseInt(selector.value) : 0;
+            const selectedPharmacistName = pharmacistNames[selectedPharmacistIndex]; // NEW
             grid.innerHTML = '';
             THAI_MONTHS.forEach((monthName, monthIndex) => {
                 const monthContainer = document.createElement('div');
@@ -771,15 +772,40 @@
                     const date = new Date(year, monthIndex, day);
                     const dutiesMap = getDutiesForDate(date);
                     let cellContent = `<div class="day-number">${day}</div>`;
+                    
+                    let phDuty = null; // NEW
+                    let isRepeat = false; // NEW
+
                     if (dutiesMap) {
+                        // Find the duty for the selected pharmacist
                         for (const duty in dutiesMap) {
-                            if (dutiesMap[duty] === pharmacistNames[selectedPharmacistIndex]) {
-                                cellContent += `<div class="duty-marker ${getRoleClass(duty)}">${duty.substring(0,3)}</div>`;
+                            if (dutiesMap[duty] === selectedPharmacistName) { // MODIFIED
+                                phDuty = duty; // NEW
                                 break;
                             }
                         }
                     }
-                    calendarGrid.innerHTML += `<div class="day-cell">${cellContent}</div>`;
+
+                    if (phDuty) { // NEW
+                        // Check for repeats
+                        const prevWeekDate = new Date(date);
+                        prevWeekDate.setDate(date.getDate() - 7);
+                        const prevDutiesMap = getDutiesForDate(prevWeekDate);
+                        if (prevDutiesMap) {
+                            for (const prevDuty in prevDutiesMap) {
+                                if (prevDutiesMap[prevDuty] === selectedPharmacistName && isSameDutyCategory(phDuty, prevDuty)) {
+                                    isRepeat = true;
+                                    break;
+                                }
+                            }
+                        }
+                        // Add the marker to the cell content
+                        cellContent += `<div class="duty-marker ${getRoleClass(phDuty)}">${phDuty.substring(0,3)}</div>`;
+                    }
+                    
+                    // Add the cell to the grid
+                    const repeatClass = isRepeat ? 'duty-repeat-warning' : ''; // NEW
+                    calendarGrid.innerHTML += `<div class="day-cell ${repeatClass}">${cellContent}</div>`; // MODIFIED
                 }
                 monthContainer.appendChild(calendarGrid);
                 grid.appendChild(monthContainer);
@@ -1547,8 +1573,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
